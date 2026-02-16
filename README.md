@@ -374,7 +374,7 @@ El código sin documentación es inutilizable. RazoConnect tiene 10+ documentos 
 
 ---
 
-## 🤝 Conclusión
+## Conclusión
 
 RazoConnect es una demostración de cómo construir:
 
