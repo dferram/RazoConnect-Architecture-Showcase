@@ -4,32 +4,32 @@
 
 ---
 
-## 🎯 ¿Qué es Multi-Tenancy?
+## ¿Qué es Multi-Tenancy?
 
 Multi-tenancy es una arquitectura donde una única instancia de una aplicación sirve a múltiples clientes (tenants), con cada tenant creyendo que tiene su propia aplicación privada.
 
 ### Analogía: El Edificio de Apartamentos
 
 Imagina un edificio con 3 apartamentos:
-- 🏠 Apartamento A (Razo)
-- 🏠 Apartamento B (Fashion)
-- 🏠 Apartamento C (TechPro)
+- Apartamento A (Razo)
+- Apartamento B (Fashion)
+- Apartamento C (TechPro)
 
 Todos comparten:
-- ✅ Mismo edificio (servidor)
-- ✅ Misma red eléctrica (infraestructura)
-- ✅ Mismo agua (base de datos)
+- Mismo edificio (servidor)
+- Misma red eléctrica (infraestructura)
+- Mismo agua (base de datos)
 
 Pero tienen:
-- ✅ Apartamentos separados (datos aislados)
-- ✅ Puertas con cerraduras diferentes (credenciales)
-- ✅ Buzones privados (emails)
+- Apartamentos separados (datos aislados)
+- Puertas con cerraduras diferentes (credenciales)
+- Buzones privados (emails)
 
 **Multi-tenancy = Un edificio eficiente, múltiples apartamentos privados**
 
 ---
 
-## 🏗️ Niveles de Aislamiento
+## Niveles de Aislamiento
 
 ### Nivel 1: Database Segregation (Raro en SaaS moderno)
 
@@ -42,14 +42,14 @@ TechPro     → PostgreSQL DB 3
 ```
 
 **Ventajas:**
-- ✅ Aislamiento perfecto
-- ✅ Escalabilidad independiente por tenant
+- Aislamiento perfecto
+- Escalabilidad independiente por tenant
 
 **Desventajas:**
-- ❌ Triple costo de infraestructura
-- ❌ Triple mantenimiento (3 bases de datos)
-- ❌ Complejidad de migrations (3x)
-- ❌ Imposible agregar features a todos rápido
+- Triple costo de infraestructura
+- Triple mantenimiento (3 bases de datos)
+- Complejidad de migrations (3x)
+- Imposible agregar features a todos rápido
 
 ---
 
@@ -65,17 +65,17 @@ PostgreSQL DB
 ```
 
 **Ventajas:**
-- ✅ Mejor que DB separadas
-- ✅ Un PostgreSQL = costos menores
+- Mejor que DB separadas
+- Un PostgreSQL = costos menores
 
 **Desventajas:**
-- ❌ Aún requiere migrations en múltiples esquemas
-- ❌ Complejidad en queries (necesita conocer el esquema)
-- ❌ Difícil manejar cambios de schema
+- Aún requiere migrations en múltiples esquemas
+- Complejidad en queries (necesita conocer el esquema)
+- Difícil manejar cambios de schema
 
 ---
 
-### Nivel 3: Row-Level Isolation (La que usa RazoConnect ⭐)
+### Nivel 3: Row-Level Isolation (La que usa RazoConnect)
 
 **Idea:** Misma base de datos, mismos esquemas, pero cada fila tiene un tenant_id
 
@@ -92,20 +92,20 @@ PostgreSQL DB
 ```
 
 **Ventajas:**
-- ✅ Máxima eficiencia operativa
-- ✅ Una BD, un esquema, un codebase
-- ✅ Features escalan a todos automáticamente
-- ✅ Costos mínimos
+- Máxima eficiencia operativa
+- Una BD, un esquema, un codebase
+- Features escalan a todos automáticamente
+- Costos mínimos
 
 **Desventajas:**
-- ❌ Requiere disciplina: cada query debe filtrar por tenant_id
-- ❌ Si olvidas el filtro, ¡datos privados se ven!
+- Requiere disciplina: cada query debe filtrar por tenant_id
+- Si olvidas el filtro, ¡datos privados se ven!
 
 **RazoConnect eligió esto porque el ROI es exponencial.**
 
 ---
 
-## 🔐 ¿Cómo se garantiza el aislamiento?
+## ¿Cómo se garantiza el aislamiento?
 
 ### Capa 1: Tenant Guard Middleware
 
@@ -250,7 +250,7 @@ Resultado: Solo ve productos de Razo, nunca de Fashion
 
 ---
 
-## 🚨 Escenarios de Ataque y Cómo se Previenen
+## Escenarios de Ataque y Cómo se Previenen
 
 ### Ataque 1: Cookie Hijacking
 
@@ -322,7 +322,7 @@ WHERE tenant_id = X filtro
 
 ---
 
-## 💡 Decisiones de Diseño
+## Decisiones de Diseño
 
 ### ¿Por qué Row-Level en lugar de Schema Segregation?
 
@@ -340,7 +340,7 @@ WHERE tenant_id = X filtro
 
 ---
 
-## 🎓 Lecciones Aprendidas
+## Lecciones Aprendidas
 
 ### Lección 1: El tenant_id debe estar SIEMPRE
 
@@ -362,7 +362,7 @@ RazoConnect tiene un patrón de auditoría que verifica: "¿Cada query tiene ten
 
 ---
 
-## 📈 Escalabilidad Multi-Tenant
+## Escalabilidad Multi-Tenant
 
 ### ¿Qué pasa cuando tienes 50 tenants?
 
@@ -393,7 +393,7 @@ RazoConnect tiene un patrón de auditoría que verifica: "¿Cada query tiene ten
 
 ---
 
-## 🔄 Lifecycle de un Tenant en RazoConnect
+## Lifecycle de un Tenant en RazoConnect
 
 ### Onboarding (Nuevo Cliente)
 
@@ -428,7 +428,7 @@ RazoConnect tiene un patrón de auditoría que verifica: "¿Cada query tiene ten
 
 ---
 
-## 📊 Métricas de Aislamiento
+## Métricas de Aislamiento
 
 | Métrica | RazoConnect |
 |---------|-------------|
@@ -439,7 +439,7 @@ RazoConnect tiene un patrón de auditoría que verifica: "¿Cada query tiene ten
 
 ---
 
-## 🎯 Conclusión
+## Conclusión
 
 La arquitectura multi-tenant de RazoConnect es:
 
