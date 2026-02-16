@@ -6,29 +6,13 @@
 
 ---
 
-## 🎯 ¿Qué es RazoConnect?
+## ¿Qué es RazoConnect?
 
 RazoConnect es una plataforma SaaS que permite a negocios mayoristas vender productos al por mayor manteniendo su propia marca, clientes y configuración. Múltiples negocios (tenants) conviven en la misma infraestructura de forma completamente aislada.
 
-### El Problema Original
-
-Cada negocio mayorista tenía su propio e-commerce separado, lo que resultaba en:
-- ❌ Código duplicado
-- ❌ Mantenimiento triplicado
-- ❌ Costos de infraestructura altos
-- ❌ Features no escalaban a todos
-
-### La Solución
-
-Una plataforma multi-tenant donde:
-- ✅ Un código base sirve a múltiples negocios
-- ✅ Cada tenant tiene datos completamente aislados
-- ✅ Nuevas features se despliegan a todos automáticamente
-- ✅ Costos operativos 60% menores
-
 ---
 
-## 🏗️ Las 5 Capas de la Arquitectura
+## Las 5 Capas de la Arquitectura
 
 ### **Capa 1: Presentación (Frontend)**
 - Interface web responsiva construida con JavaScript vanilla + Bootstrap
@@ -68,7 +52,7 @@ Servicios especializados que manejan la inteligencia del sistema:
 
 ---
 
-## 🔐 El Desafío: Multi-Tenancy
+## El Desafío: Multi-Tenancy
 
 ### ¿Por qué es crítico?
 
@@ -97,7 +81,7 @@ En la base de datos misma, cada query filtra automáticamente por tenant_id. Inc
 
 ---
 
-## 🧠 El Algoritmo: FIFO Inteligente + Priority Override
+## El Algoritmo: FIFO Inteligente + Priority Override
 
 ### El Problema Real
 
@@ -210,7 +194,7 @@ El sistema evalúa automáticamente en segundos:
 
 ---
 
-## 🎯 Casos de Uso Principales
+## Casos de Uso Principales
 
 ### 1. Cliente Realiza Pedido
 
@@ -251,7 +235,7 @@ Admin aprueba → Sistema crea grupo, mantiene órdenes separadas para billing
 
 ---
 
-## 🚀 Stack Tecnológico
+## Stack Tecnológico
 
 ### Frontend
 - **Lenguaje:** JavaScript Vanilla (ES6+)
@@ -276,20 +260,20 @@ Admin aprueba → Sistema crea grupo, mantiene órdenes separadas para billing
 
 ---
 
-## 📚 Documentación Técnica Detallada
+## Documentación Técnica Detallada
 
 Este repositorio contiene documentación sobre:
 
-- **[MULTI_TENANCY.md](./docs/MULTI_TENANCY.md)** - Cómo funciona el aislamiento
+- **[MULTI_TENANCY.md](./docs/Multi-Tenancy_Architecture.md)** - Cómo funciona el aislamiento
 - **[SMART_INVENTORY.md](./docs/SMART_INVENTORY.md)** - Algoritmo FIFO y asignación
-- **[CREDIT_SYSTEM.md](./docs/CREDIT_SYSTEM.md)** - Análisis de riesgo automático
-- **[AUDIT_LOGGING.md](./docs/AUDIT_LOGGING.md)** - Trazabilidad forense
-- **[SECURITY_LAYERS.md](./docs/SECURITY_LAYERS.md)** - Las 4 capas de validación
-- **[DATABASE_DESIGN.md](./docs/DATABASE_DESIGN.md)** - Schema y decisiones
+- **[CREDIT_SYSTEM.md](./docs/Automated_Credit_Risk_Analysis_System.md)** - Análisis de riesgo automático
+- **[AUDIT_LOGGING.md](./docs/Audit_Logging_&_Forensic_Traceability.md)** - Trazabilidad forense
+- **[SECURITY_LAYERS.md](./docs/Security_Architecture:_4_Layers_of_Defense.md)** - Las 4 capas de validación
+- **[DATABASE_DESIGN.md](./docs/Database_Design_&_Schema_Architecture.md)** - Schema y decisiones
 
 ---
 
-## 💡 Decisiones Arquitectónicas Clave
+## Decisiones Arquitectónicas Clave
 
 ### ¿Por qué Multi-Tenant?
 
@@ -329,7 +313,7 @@ Este repositorio contiene documentación sobre:
 
 ---
 
-## 🎓 Lecciones Aprendidas
+## Lecciones Aprendidas
 
 ### 1. Multi-Tenancy desde el Inicio
 Si la agregas después, necesitas reescribir todo. Cada tabla debe tener tenant_id desde el primer migration.
@@ -348,15 +332,15 @@ El código sin documentación es inutilizable. RazoConnect tiene 10+ documentos 
 
 ---
 
-## 📈 Métricas de Éxito
+## Métricas de Éxito
 
-| Métrica | Target | Actual | Status |
-|---------|--------|--------|--------|
-| Uptime | 99.5% | 99.8% | ✅ |
-| Respuesta API | <200ms | 150ms | ✅ |
-| Concurrent Users | 500+ | 500+ | ✅ |
-| Errores de Auditoría | 0 | 0 | ✅ |
-| Discrepancias Inventario | <0.5% | 0.3% | ✅ |
+| Métrica | Target | Actual |
+|---------|--------|--------|
+| Uptime | 99.5% | 99.8% |
+| Respuesta API | <200ms | 150ms |
+| Concurrent Users | 500+ | 500+ |
+| Errores de Auditoría | 0 | 0 |
+| Discrepancias Inventario | <0.5% | 0.3% |
 
 ---
 
@@ -364,13 +348,11 @@ El código sin documentación es inutilizable. RazoConnect tiene 10+ documentos 
 
 RazoConnect es una demostración de cómo construir:
 
-✅ **Sistemas escalables** para múltiples usuarios simultáneamente  
-✅ **Arquitecturas seguras** con validación en capas  
-✅ **Lógica inteligente** que automatiza decisiones  
-✅ **Auditoría completa** para compliance legal  
-✅ **Documentación** que permite onboarding rápido  
-
-**El código es privado porque genera ingresos, pero la arquitectura es tu mejor portfolio.**
+**Sistemas escalables** para múltiples usuarios simultáneamente  
+**Arquitecturas seguras** con validación en capas  
+**Lógica inteligente** que automatiza decisiones  
+**Auditoría completa** para compliance legal  
+**Documentación** que permite onboarding rápido  
 
 ---
 
