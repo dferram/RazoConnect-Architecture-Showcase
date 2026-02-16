@@ -6,19 +6,6 @@
 
 ---
 
-## 📊 Resumen Ejecutivo
-
-| Métrica | Valor |
-|---------|-------|
-| **Líneas de Código** | 50,000+ |
-| **Commits en 46 días** | 560+ commits (12/día) |
-| **Tenants en Producción** | 3+ clientes activos |
-| **Stack** | Node.js + PostgreSQL + Azure |
-| **Uptime** | 99.8% |
-| **Concurrent Users** | 500+ soportados |
-
----
-
 ## 🎯 ¿Qué es RazoConnect?
 
 RazoConnect es una plataforma SaaS que permite a negocios mayoristas vender productos al por mayor manteniendo su propia marca, clientes y configuración. Múltiples negocios (tenants) conviven en la misma infraestructura de forma completamente aislada.
