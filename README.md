@@ -124,7 +124,7 @@ El sistema también normaliza cantidades según el empaque del proveedor:
 
 ---
 
-## 📊 Sistema de Auditoría Forense
+## Sistema de Auditoría Forense
 
 ### ¿Qué es el Kardex?
 
@@ -158,7 +158,7 @@ Los admins deben documentar cada discrepancia roja. Sistema crea reporte mensual
 
 ---
 
-## 💳 Credit Risk Analysis
+## Credit Risk Analysis
 
 ### El Desafío
 
