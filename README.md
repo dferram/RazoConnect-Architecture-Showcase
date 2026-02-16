@@ -35,6 +35,7 @@ Una plataforma multi-tenant donde:
 - Temas personalizables según el tenant (Razo theme, Fashion theme)
 - Carga dinámica de contenido basada en el tenant
 - Componentes reutilizables para máxima eficiencia
+- Temas que cambian el diseño de la página según la temporada
 
 ### **Capa 2: Seguridad (4 Capas de Aislamiento)**
 RazoConnect implementa validación multi-capa para garantizar que los datos de un tenant jamás se filtren a otro:
@@ -42,7 +43,7 @@ RazoConnect implementa validación multi-capa para garantizar que los datos de u
 1. **Detección de Tenant por Dominio:** Cuando accedes a `razo.com.mx` vs `fashion.shop.mx`, el sistema detecta automáticamente cuál tenant está siendo accedido.
 2. **Validación User-Tenant:** Se verifica que el usuario actual pertenezca realmente al tenant que está visitando.
 3. **JWT Token Binding:** Los tokens contienen el ID del tenant y no pueden ser usados en otro tenant.
-4. **Row-Level Security en BD:** Cada query filtra automáticamente por tenant_id, proteggiendo los datos incluso si alguien obtiene acceso directo a la BD.
+4. **Row-Level Security en BD:** Cada query filtra automáticamente por tenant_id, protegiendo los datos incluso si alguien obtiene acceso directo a la BD.
 
 ### **Capa 3: API (Express.js + Custom Middlewares)**
 - API RESTful con endpoints organizados por recurso
