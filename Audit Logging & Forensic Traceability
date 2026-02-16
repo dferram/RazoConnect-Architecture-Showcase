@@ -4,7 +4,7 @@
 
 ---
 
-## 🎯 ¿Por Qué Auditoría?
+## ¿Por Qué Auditoría?
 
 ### Los Problemas que Resuelve
 
@@ -26,7 +26,7 @@ Cada acción crítica se registra permanentemente e inmutablemente.
 
 ---
 
-## 📋 ¿Qué se Registra?
+## ¿Qué se Registra?
 
 ### Categoría 1: Movimientos de Inventario
 
@@ -97,7 +97,7 @@ Timestamp: 2026-02-15 14:32:15 UTC
 
 ---
 
-## 🔒 Propiedades del Audit Log
+## Propiedades del Audit Log
 
 ### Propiedad 1: Inmutable
 
@@ -144,7 +144,7 @@ Cada log incluye tenant_id, así los datos de un tenant jamás se mezclan con ot
 
 ---
 
-## 🔍 Casos de Uso: Forensics
+## Casos de Uso: Forensics
 
 ### Caso 1: Cliente Reclama "No Autoricé Esta Compra"
 
@@ -210,7 +210,7 @@ La brecha fue en otro lado (email comprometido, etc).
 
 ---
 
-## 📊 Estadísticas del Audit Log
+## Estadísticas del Audit Log
 
 ### Volumen
 
@@ -246,7 +246,7 @@ Conclusión: El logging es prácticamente gratis en performance.
 
 ---
 
-## 🔐 Protección del Audit Log
+## Protección del Audit Log
 
 ### Quién puede Acceder?
 
@@ -325,7 +325,7 @@ Auditor externo:
 
 ---
 
-## 💡 Decisiones de Diseño
+## Decisiones de Diseño
 
 ### ¿Por Qué Append-Only?
 
@@ -364,7 +364,7 @@ Response al usuario (inmediata)
 
 ---
 
-## 📋 Ejemplos de Logs Reales
+## Ejemplos de Logs Reales
 
 ### Log 1: Movimiento de Inventario
 
@@ -412,7 +412,7 @@ Response al usuario (inmediata)
 
 ---
 
-## 🎓 Lecciones Aprendidas
+## Lecciones Aprendidas
 
 ### Lección 1: Audit Desde el Inicio
 
@@ -439,7 +439,7 @@ Si cualquiera puede modificar los logs, el sistema es inútil. Append-only + acc
 
 ---
 
-## 🎯 Conclusión
+## Conclusión
 
 El Audit System de RazoConnect:
 
