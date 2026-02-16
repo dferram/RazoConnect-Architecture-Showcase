@@ -1,0 +1,291 @@
+# Database Design & Schema Architecture
+
+> **Cómo diseñar una base de datos que soporte múltiples tenants, auditoría, complejas validaciones y escalabilidad**
+
+---
+
+## 📊 Arquitectura de Tablas
+
+RazoConnect utiliza **20+ tablas** organizadas en 5 dominios:
+
+```
+DOMINIO 1: TENANTS & USUARIOS
+├── tenants (clientes de la plataforma)
+└── usuarios (admins, agentes, viewers)
+
+DOMINIO 2: CATÁLOGO
+├── productos
+├── producto_variantes
+├── categorias
+└── proveedores
+
+DOMINIO 3: INVENTARIO
+├── inventarios_admin (stock por admin/bodega)
+├── stock_admin (stock consolidado)
+├── movimientos_inventario (Kardex append-only)
+└── sesiones_inventario (conteos periódicos)
+
+DOMINIO 4: VENTAS & CRÉDITO
+├── clientes
+├── cliente_creditos
+├── pedidos
+├── detalles_del_pedido
+├── solicitudes_credito
+└── devoluciones
+
+DOMINIO 5: ÓRDENES DE COMPRA
+├── ordenesdecompra
+├── detalles_oc_proveedor
+└── remisiones
+
+DOMINIO 6: AUDITORÍA & LOGS
+├── audit_log (append-only)
+├── notificaciones
+├── errores_sincronizacion
+└── landing_config
+```
+
+## Funciones PL/pgSQL Especializadas
+
+RazoConnect implementa **20+ funciones** en la BD para lógica crítica:
+
+### **Funciones de Deuda**
+
+**actualizar_estatus_deuda_vencida()**
+- Diariamente (via pg_cron) actualiza qué deudas están vencidas
+- Calcula días de atraso automáticamente
+- Si deuda > 15 días, suspende cliente
+
+**trigger_actualizar_estatus_deuda()**
+- Se dispara al cambiar fecha de vencimiento
+- Automáticamente marca como VENCIDA si fecha < hoy
+- Se dispara al pagar, reseteando deuda a PAGADA
+
+---
+
+### **Funciones de Inventario**
+
+**get_stock_admin(admin_id, variante_id)**
+- Consulta rápida: ¿cuánto stock tiene este admin?
+- Usado en validaciones de asignación
+
+**upsert_inventario_admin(admin_id, variante_id, cantidad)**
+- Inserta o incrementa stock
+- Usa INSERT ... ON CONFLICT ... DO UPDATE
+- Garantiza consistencia si hay race conditions
+
+**sync_producto_variante_stock()**
+- Trigger que se dispara cada vez que cambia inventarios_admin
+- Automáticamente recalcula producto_variantes.stock
+- Mantiene sincronización entre tablas
+
+**fn_validar_movimiento_inventario()**
+- Trigger que valida cada movimiento
+- Verifica que stock_posterior = stock_previo ± cantidad
+- Previene inconsistencias matemáticas
+
+---
+
+### **Funciones de Órdenes**
+
+**recalcular_total_pedido()**
+- Trigger que se dispara al cambiar detalles de pedido
+- Recalcula monto total sumando todos los items
+- DETECTA discrepancias sin modificar automáticamente
+- Registra en tabla "errores_sincronizacion" si hay problema
+- Previene corrupción de datos financieros
+
+**validar_agrupacion_ordenes(orden_ids[])**
+- Función que valida si órdenes pueden agruparse
+- Verifica que todas sean del mismo proveedor
+- Devuelve validez + proveedor común + mensaje
+
+---
+
+### **Funciones de Devoluciones**
+
+**calcular_monto_total_devolucion(devolucion_id)**
+- Suma todos los detalles de devolución
+- Resultado se guarda en tabla devoluciones
+- Automático via trigger
+
+**validar_cantidad_devuelta()**
+- Trigger que verifica no devuelves más de lo que compraste
+- Suma devoluciones previas
+- Evita "devolver más que la cantidad original"
+
+---
+
+### **Funciones Auxiliares**
+
+**generar_folio_remision(tenant_id)**
+- Genera folio único: REM-2026-00001
+- Usa tenant_id para aislar por cliente
+- Automáticamente incrementa consecutivo
+
+**obtener_siguiente_sku(categoria_id)**
+- Genera SKU único: CAJ-001, CAJ-002, etc
+- Basado en nombre de categoría (3 primeras letras)
+- Previene duplicados
+
+**suspender_clientes_morosos()**
+- Job que corre diariamente (pg_cron)
+- Suspende clientes con deuda > 15 días
+- Bloquea nuevo crédito automáticamente
+
+---
+
+## 📊 Diagrama Entidad-Relación (ER)
+
+```
+┌─────────────────────────────────────────────────────────────────────────┐
+│                           RAZOCONNECT DATABASE                          │
+└─────────────────────────────────────────────────────────────────────────┘
+
+                              ┌─────────────────┐
+                              │    tenants      │
+                              ├─────────────────┤
+                              │ tenant_id (PK)  │
+                              │ nombre          │
+                              │ dominio (UQ)    │
+                              │ is_active       │
+                              │ plan            │
+                              └────────┬────────┘
+                                       │
+                    ┌──────────────────┼──────────────────┐
+                    │                  │                  │
+                    ▼                  ▼                  ▼
+         ┌──────────────────┐  ┌──────────────────┐  ┌──────────────────┐
+         │    usuarios      │  │    clientes      │  │    productos     │
+         ├──────────────────┤  ├──────────────────┤  ├──────────────────┤
+         │ usuario_id (PK)  │  │ cliente_id (PK)  │  │ producto_id (PK) │
+         │ tenant_id (FK)   │  │ tenant_id (FK)   │  │ tenant_id (FK)   │
+         │ email (UQ)       │  │ email            │  │ nombre           │
+         │ rol              │  │ credito_disp     │  │ precio_unitario  │
+         │ is_active        │  │ historial_compra │  │ proveedor_id(FK) │
+         └──────────────────┘  └────────┬─────────┘  └────────┬─────────┘
+                                        │                     │
+                        ┌───────────────┼─────────────────┐   │
+                        │               │                 │   │
+                        ▼               ▼                 ▼   ▼
+         ┌──────────────────────┐  ┌──────────────────┐ ┌──────────────────┐
+         │  cliente_creditos    │  │    pedidos       │ │ producto_variantes
+         ├──────────────────────┤  ├──────────────────┤ ├──────────────────┤
+         │ credito_id (PK)      │  │ pedido_id (PK)   │ │ variante_id (PK) │
+         │ cliente_id (FK)      │  │ tenant_id (FK)   │ │ producto_id (FK) │
+         │ tenant_id (FK)       │  │ cliente_id (FK)  │ │ tenant_id (FK)   │
+         │ estado_credito       │  │ estatus          │ │ sku (UQ)         │
+         │ deuda_vencida        │  │ es_prioritario    │ │ precio_unitario  │
+         └──────────────────────┘  │ monto_total      │ └────────┬─────────┘
+                                    │ es_credito       │         │
+                                    │ estatus_deuda    │         │
+                                    │ dias_atraso      │         ▼
+                                    └────────┬────────┘  ┌──────────────────┐
+                                             │           │ inventarios_admin│
+                                    ┌────────┴────────┐  ├──────────────────┤
+                                    │                 │  │ stock_id (PK)    │
+                                    ▼                 ▼  │ admin_id (FK)    │
+                        ┌──────────────────────────────┐ │ variante_id (FK) │
+                        │ detalles_del_pedido          │ │ tenant_id (FK)   │
+                        ├──────────────────────────────┤ │ cantidad         │
+                        │ detalle_id (PK)              │ └────────┬─────────┘
+                        │ pedido_id (FK)               │          │
+                        │ variante_id (FK)             │          │
+                        │ tenant_id (FK)               │          ▼
+                        │ cantidad_paquetes             │ ┌──────────────────┐
+                        │ piezas_por_paquete           │ │movimientos_invnt │
+                        │ cantidad_surtida             │ ├──────────────────┤
+                        │ cantidad_backorder           │ │movimiento_id(PK) │
+                        │ es_backorder                 │ │variante_id (FK)  │
+                        │ precio_unitario              │ │ cantidad         │
+                        └──────────────────────────────┘ │ stock_anterior   │
+                                    │                    │ stock_posterior  │
+                                    │                    │ tipo             │
+                                    │                    │(APPEND-ONLY TABLE)
+                                    │                    └──────────────────┘
+                        ┌───────────┴──────────────┐
+                        │                          │
+                        ▼                          ▼
+         ┌──────────────────────────┐ ┌──────────────────────────┐
+         │ ordenesdecompra          │ │ devoluciones             │
+         ├──────────────────────────┤ ├──────────────────────────┤
+         │ ordencompra_id (PK)      │ │ devolucion_id (PK)       │
+         │ tenant_id (FK)           │ │ pedido_id (FK)           │
+         │ proveedor_id (FK)        │ │ cliente_id (FK)          │
+         │ estatus                  │ │ tenant_id (FK)           │
+         │ fecha_entrega_estimada   │ │ estado                   │
+         │ monto_total              │ │ monto_total (CALC)       │
+         └───────────┬──────────────┘ └────────┬─────────────────┘
+                     │                         │
+                     ▼                         ▼
+         ┌──────────────────────────┐ ┌──────────────────────────┐
+         │ detalles_oc_proveedor    │ │ devoluciones_detalles    │
+         ├──────────────────────────┤ ├──────────────────────────┤
+         │ detalle_oc_id (PK)       │ │ detalle_dev_id (PK)      │
+         │ oc_id (FK)               │ │ devolucion_id (FK)       │
+         │ variante_id (FK)         │ │ detalle_pedido_id (FK)   │
+         │ cantidad_paquetes        │ │ cantidad_paquetes        │
+         │ cantidad_recibida        │ │ subtotal                 │
+         │ cantidad_diferencia      │ └──────────────────────────┘
+         └──────────────────────────┘
+
+                                ┌──────────────────┐
+                                │ audit_log        │
+                                ├──────────────────┤
+                                │ log_id (PK)      │
+                                │ tenant_id (FK)   │
+                                │ usuario_id (FK)  │
+                                │ accion           │
+                                │ recurso_tipo     │
+                                │ cambios (JSON)   │
+                                │ timestamp        │
+                                │(APPEND-ONLY)     │
+                                └──────────────────┘
+
+LEYENDA:
+  PK = Primary Key (clave única de tabla)
+  FK = Foreign Key (referencia a otra tabla)
+  UQ = Unique (no puede haber duplicados)
+  CALC = Campo calculado automáticamente por trigger
+  APPEND-ONLY = No se puede modificar ni borrar
+
+RELACIONES PRINCIPALES:
+  • tenants ← → usuarios, clientes, productos
+  • productos ← → producto_variantes
+  • producto_variantes ← → inventarios_admin, movimientos_inventario
+  • clientes ← → pedidos, cliente_creditos
+  • pedidos ← → detalles_del_pedido, devoluciones
+  • detalles_del_pedido ← → devoluciones_detalles
+  • ordenesdecompra ← → detalles_oc_proveedor
+  • TODO ← → audit_log (cada tabla es auditada)
+```
+
+## 🔄 Triggers Automáticos
+
+RazoConnect tiene 10+ triggers que se disparan automáticamente:
+
+| Trigger | Se Dispara | Acción |
+|---------|-----------|--------|
+| `actualizar_timestamp_inventario` | UPDATE en inventarios_admin | Actualiza `ultima_actualizacion` |
+| `sync_producto_variante_stock` | INSERT/UPDATE/DELETE en inventarios_admin | Sincroniza stock total |
+| `fn_validar_movimiento_inventario` | INSERT en movimientos_inventario | Valida consistencia ACID |
+| `recalcular_total_pedido` | INSERT/UPDATE/DELETE en detalles_del_pedido | Valida totales |
+| `actualizar_timestamp_devolucion` | UPDATE en devoluciones | Actualiza timestamp |
+| `actualizar_monto_total_devolucion` | INSERT/UPDATE en devoluciones_detalles | Recalcula monto |
+| `validar_cantidad_devuelta` | INSERT/UPDATE en devoluciones_detalles | Valida no exceda cantidad original |
+| `trigger_actualizar_estatus_deuda` | UPDATE en pedidos | Actualiza deuda vencida |
+| `limitar_notificaciones_por_cliente` | INSERT en notificaciones | Limpia a 100 últimas |
+
+## Conclusión
+
+El Database Design de RazoConnect:
+
+✅ **Normalizado:** 3NF + desnormalización inteligente  
+✅ **Multi-tenant:** tenant_id en cada tabla crítica  
+✅ **Auditado:** Kardex append-only + audit_log  
+✅ **Validado:** 10+ triggers para integridad ACID  
+✅ **Optimizado:** 30+ índices estratégicos  
+✅ **Automatizado:** 10+ funciones PL/pgSQL especializadas  
+✅ **Escalable:** Soporta múltiples tenants simultáneamente  
+
+**El secreto:** Normalización + desnormalización inteligente + triggers automáticos + append-only auditing = Base de datos enterprise-grade que **se valida a sí misma**.
