@@ -264,12 +264,12 @@ Admin aprueba → Sistema crea grupo, mantiene órdenes separadas para billing
 
 Este repositorio contiene documentación sobre:
 
-- **[MULTI_TENANCY.md](./docs/MULTI_TENANCY.md)** - Cómo funciona el aislamiento
-- **[SMART_INVENTORY.md](./docs/SMART_INVENTORY.md)** - Algoritmo FIFO y asignación
-- **[CREDIT_SYSTEM.md](./docs/CREDIT_SYSTEM.md)** - Análisis de riesgo automático
-- **[AUDIT_LOGGING.md](./docs/AUDIT_LOGGING.md)** - Trazabilidad forense
-- **[SECURITY_LAYERS.md](./docs/SECURITY_LAYERS.md)** - Las 4 capas de validación
-- **[DATABASE_DESIGN.md](./docs/DATABASE_DESIGN.md)** - Schema y decisiones
+- **[MULTI_TENANCY.md](MULTI_TENANCY.md)** - Cómo funciona el aislamiento
+- **[SMART_INVENTORY.md](SMART_INVENTORY.md)** - Algoritmo FIFO y asignación
+- **[CREDIT_SYSTEM.md](CREDIT_SYSTEM.md)** - Análisis de riesgo automático
+- **[AUDIT_LOGGING.md](AUDIT_LOGGING.md)** - Trazabilidad forense
+- **[SECURITY_LAYERS.md](SECURITY_LAYERS.md)** - Las 4 capas de validación
+- **[DATABASE_DESIGN.md](DATABASE_DESIGN.md)** - Schema y decisiones
 
 ---
 
