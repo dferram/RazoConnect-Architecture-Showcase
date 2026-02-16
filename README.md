@@ -286,7 +286,6 @@ Este repositorio contiene documentación sobre:
 - **[AUDIT_LOGGING.md](./docs/AUDIT_LOGGING.md)** - Trazabilidad forense
 - **[SECURITY_LAYERS.md](./docs/SECURITY_LAYERS.md)** - Las 4 capas de validación
 - **[DATABASE_DESIGN.md](./docs/DATABASE_DESIGN.md)** - Schema y decisiones
-- **[LESSONS_LEARNED.md](./docs/LESSONS_LEARNED.md)** - Errores y aciertos
 
 ---
 
