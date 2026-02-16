@@ -203,11 +203,10 @@ El sistema evalúa automáticamente en segundos:
 - No tiene deudas → Continuar análisis
 
 **Resultado:** Recomendación automática en segundos
-- 🟢 BAJO → Aprobar (inmediato)
-- 🟡 MEDIO → Revisar manualmente
-- 🔴 ALTO → Rechazar (automático)
-
-**Impacto:** En lugar de evaluar manualmente cada solicitud (3-5 horas por semana), el sistema lo hace automáticamente.
+- 🟢 BAJO → Aprobar 
+- 🟡 MEDIO → Revisar 
+- 🔴 ALTO → Rechazar
+**Nota importante** El sistema no aprueba nada sin revisión del usuario para aún así mantener el control para el usuario
 
 ---
 
