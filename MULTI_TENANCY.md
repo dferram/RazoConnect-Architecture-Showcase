@@ -144,4 +144,4 @@ Este comportamiento garantiza que una cookie robada de un tenant no pueda ser us
 
 ---
 
-Desarrollado por Diego Ferram | xCore — 2025
+Desarrollado por Fernando | xCore
