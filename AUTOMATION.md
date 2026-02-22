@@ -124,4 +124,4 @@ La sugerencia incluye: ordenes involucradas, cantidad actual vs cantidad optimiz
 
 ---
 
-Desarrollado por Diego Ferram | xCore — 2025
+Desarrollado por Fernando | xCore 
