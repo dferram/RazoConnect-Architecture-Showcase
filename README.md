@@ -1,360 +1,89 @@
-# RazoConnect - Architecture Case Study
+# RazoConnect — Architecture Showcase
 
-> **Cómo construir una plataforma B2B multi-tenant escalable para venta al mayoreo**
->
-> Este repositorio documenta la arquitectura completa de **RazoConnect**, un SaaS B2B en producción que maneja inventario, crédito y órdenes para múltiples negocios simultáneamente. El código fuente es privado (producto comercial), pero toda la arquitectura, patrones de diseño y decisiones técnicas están completamente documentadas.
+RazoConnect es una plataforma SaaS B2B multi-tenant en produccion que permite a negocios mayoristas operar con su propia marca, catalogo de productos, clientes y configuracion, compartiendo infraestructura con otros negocios de forma completamente aislada. El codigo fuente es privado al ser un producto comercial, pero toda la arquitectura, patrones de diseno y decisiones tecnicas estan documentadas en este repositorio.
 
 ---
 
-## ¿Qué es RazoConnect?
+## Tabla de Contenidos
 
-RazoConnect es una plataforma SaaS que permite a negocios mayoristas vender productos al por mayor manteniendo su propia marca, clientes y configuración. Múltiples negocios (tenants) conviven en la misma infraestructura de forma completamente aislada.
-
----
-
-## Las 5 Capas de la Arquitectura
-
-### **Capa 1: Presentación (Frontend)**
-- Interface web responsiva construida con JavaScript vanilla + Bootstrap
-- Temas personalizables según el tenant (Razo theme, Fashion theme)
-- Carga dinámica de contenido basada en el tenant
-- Componentes reutilizables para máxima eficiencia
-- Temas que cambian el diseño de la página según la temporada
-
-### **Capa 2: Seguridad (4 Capas de Aislamiento)**
-RazoConnect implementa validación multi-capa para garantizar que los datos de un tenant jamás se filtren a otro:
-
-1. **Detección de Tenant por Dominio:** Cuando accedes a `razo.com.mx` vs `fashion.shop.mx`, el sistema detecta automáticamente cuál tenant está siendo accedido.
-2. **Validación User-Tenant:** Se verifica que el usuario actual pertenezca realmente al tenant que está visitando.
-3. **JWT Token Binding:** Los tokens contienen el ID del tenant y no pueden ser usados en otro tenant.
-4. **Row-Level Security en BD:** Cada query filtra automáticamente por tenant_id, protegiendo los datos incluso si alguien obtiene acceso directo a la BD.
-
-### **Capa 3: API (Express.js + Custom Middlewares)**
-- API RESTful con endpoints organizados por recurso
-- Middlewares personalizados para autenticación, validación y auditoría
-- Manejo centralizado de errores
-- Rate limiting para protección contra abuso
-
-### **Capa 4: Lógica de Negocio (Services)**
-Servicios especializados que manejan la inteligencia del sistema:
-
-- **SmartStockService:** Asigna inventario inteligentemente usando FIFO con prioridades
-- **CreditAnalysisService:** Evalúa automáticamente riesgo de crédito de clientes
-- **OptimizationService:** Sugiere consolidaciones de órdenes para ahorrar costos
-- **KardexService:** Registra de forma inmutable cada movimiento de inventario
-- **AuditLogger:** Registra todas las acciones para compliance
-
-### **Capa 5: Datos (PostgreSQL + Azure)**
-- Base de datos centralizada con aislamiento por tenant
-- Transacciones ACID para garantizar consistencia
-- Kardex (movimientos inmutables)
-- Audit tables para trazabilidad legal
+- [Arquitectura General](#arquitectura-general)
+- [Stack Tecnologico](#stack-tecnologico)
+- [Puntos Fuertes del Proyecto](#puntos-fuertes-del-proyecto)
+- [Documentacion Tecnica](#documentacion-tecnica)
 
 ---
 
-## El Desafío: Multi-Tenancy
+## Arquitectura General
 
-### ¿Por qué es crítico?
-
-Imagina que tienes 3 clientes usando RazoConnect:
-- **Razo:** Mayorista de ropa
-- **Fashion Plus:** Distribuidor de moda
-- **TechPro:** Mayorista de electrónica
-
-Todos comparten servidores, base de datos e infraestructura, pero JAMÁS deben verse datos entre ellos. Es como tener 3 bancos compartiendo el mismo edificio pero con bóvedas completamente separadas.
-
-### La Solución: Validación en 4 Capas
-
-**Layer 1 - Tenant Guard (Detección)**
-El sistema detecta automáticamente cuál tenant está siendo accedido basado en el dominio de la petición. Si no existe o no está activo, rechaza la petición.
-
-**Layer 2 - User Validation (Matching)**
-Verifica que el usuario que está usando la sesión realmente pertenece al tenant que está intentando acceder. Si hay un mismatch (imposible en producción, pero si ocurre), destruye la sesión inmediatamente.
-
-**Layer 3 - Token Binding (Stateless)**
-Los JWT tokens incluyen el tenant_id. Un token válido para Razo será rechazado automáticamente si intenta ser usado en Fashion. Esto funciona incluso sin acceso a base de datos.
-
-**Layer 4 - Database Filtering (Defense in Depth)**
-En la base de datos misma, cada query filtra automáticamente por tenant_id. Incluso si alguien obtiene credenciales de DB, solo puede ver datos de su tenant.
-
-**Resultado:** 4 niveles de protección hacen que sea prácticamente imposible un data breach entre tenants.
-
----
-
-## El Algoritmo: FIFO Inteligente + Priority Override
-
-### El Problema Real
-
-Un mayorista vende en múltiplos:
-- Proveedor A vende en cajas de 12
-- Un cliente pequeño pide 50 unidades
-- Un cliente VIP pide 30 unidades pero está esperando desde hace poco
-- ¿A quién le das el stock?
-
-### La Solución: FIFO Modificado
-
-El sistema utiliza **FIFO (First In, First Out)** con la capacidad de quebrar la fila para clientes VIP:
-
-**Regla 1:** Órdenes normales se cumplen por orden de llegada (FIFO clásico)
-**Regla 2:** Órdenes VIP pueden saltarse en la fila
-**Regla 3:** Si una VIP toma stock destinado a una normal, la normal se degrada automáticamente a "bajo pedido"
-
-**Ejemplo en números:**
-```
-Stock: 100 unidades
-
-Orden A (Normal, 50 piezas, hace 5 días)
-  → ✅ Surtida completamente (100 - 50 = 50 restante)
-
-Orden B (Normal, 50 piezas, hace 2 días)
-  → ⚠️ Parcial (50 surtida, 10 backorder)
-
-Orden C (VIP, 30 piezas, hace 1 día)
-  → ✅ Surtida (rompe FIFO, pero es VIP)
-
-Efecto cascada: Orden B ahora es 100% backorder (sistema notifica automáticamente)
+```mermaid
+flowchart TD
+    Cliente["Navegador / App"] --> Dominio["Dominio del Tenant\nrazo.com.mx"]
+    Dominio --> TG["tenantGuard\nDeteccion por hostname"]
+    TG --> Auth["authMiddleware\nJWT + Session"]
+    Auth --> TSG["tenantSessionGuard\nVerifica tenant_id en token"]
+    TSG --> Rutas["Router Express\n20+ modulos"]
+    Rutas --> Controllers["Controllers"]
+    Controllers --> Services["Services"]
+    Services --> PG["PostgreSQL\n20+ tablas, 20+ funciones PL/pgSQL"]
+    Services --> Cloudinary["Cloudinary\nImagenes optimizadas"]
+    Services --> Email["Nodemailer\nPlantillas Handlebars"]
+    Services --> MP["MercadoPago\nPagos en linea"]
 ```
 
-### Smart Reordering
-
-El sistema también normaliza cantidades según el empaque del proveedor:
-- Si el mínimo es 12 y pides 15, compra 24
-- El "sobrante" (9 unidades) se usa para otros clientes después
-- Esto optimiza compras y reduce costos logísticos
+El flujo comienza en el dominio del tenant. Cada hostname se resuelve a un registro de tenant en la base de datos antes de que cualquier logica de negocio se ejecute. La sesion y el token JWT se validan independientemente y se comparan contra el tenant detectado, de modo que un token valido para un negocio no puede operar en otro. Las rutas de Express estan organizadas en mas de 20 modulos funcionales que delegan a una capa de servicios, y esos servicios se comunican exclusivamente con PostgreSQL, Cloudinary, Nodemailer y MercadoPago.
 
 ---
 
-## Sistema de Auditoría Forense
+## Stack Tecnologico
 
-### ¿Qué es el Kardex?
-
-Un registro inmutable de CADA movimiento de inventario:
-
-Cuando algo sucede (compra, venta, merma, ajuste), se registra:
-- Fecha y hora exacta
-- Quién lo hizo (admin/sistema)
-- La razón específica
-- Stock anterior y posterior
-- IP del usuario
-
-### ¿Por qué es Importante?
-
-Si hay discrepancia (el stock físico no coincide con el teórico), puedes:
-- Rastrear exactamente cuándo ocurrió
-- Saber quién accedió en ese momento
-- Detectar si es error humano o fraude
-- Tener trail legal completo para auditorías
-
-### Auditoría Mensual
-
-Cada mes el sistema:
-1. Calcula stock teórico (inicial + entradas - salidas - mermas)
-2. Se compara con stock físico (conteo manual)
-3. Identifica discrepancias
-4. Si es pequeña (1-2 unidades) → Aceptable 🟡
-5. Si es grande (>2 unidades) → Requiere justificación 🔴
-
-Los admins deben documentar cada discrepancia roja. Sistema crea reporte mensual con tendencias.
+| Categoria | Tecnologia |
+|---|---|
+| Runtime | Node.js + Express |
+| Base de datos | PostgreSQL con 20+ funciones PL/pgSQL y pg_cron |
+| Autenticacion | JWT + express-session + Passport.js + Google OAuth 2.0 |
+| Pagos | MercadoPago SDK con manejo de webhooks |
+| Almacenamiento de imagenes | Cloudinary + Multer + Sharp (procesamiento antes de subir) |
+| Email | Nodemailer con plantillas Handlebars |
+| Generacion de documentos | PDFKit (facturas PDF) + ExcelJS (reportes Excel) |
+| Tareas programadas | node-cron + pg_cron |
+| Deployment | Azure App Service (trust proxy configurado) |
+| Seguridad | Implementacion manual de OWASP: CSP, HSTS, rate limiting, input sanitization, secrets audit |
+| Arquitectura | Multi-tenant Row-Level con 4 capas de aislamiento en middleware |
 
 ---
 
-## Credit Risk Analysis
+## Puntos Fuertes del Proyecto
 
-### El Desafío
+**Seguridad sin dependencias de terceros.** Las cabeceras de seguridad (CSP, HSTS, X-Frame-Options), el rate limiter y el validador de inputs estan escritos a mano siguiendo OWASP Top 10. No se usa helmet ni ningun paquete de seguridad de terceros. Esto reduce la superficie de ataque y garantiza comprension completa de cada medida. Ver [SECURITY_LAYERS.md](SECURITY_LAYERS.md).
 
-Un cliente quiere $5,000 a crédito. ¿Lo apruebas? ¿Cuánto es seguro?
+**Multi-tenancy con aislamiento real.** La deteccion de tenant por dominio, la validacion cruzada de JWT, la destruccion activa de sesion ante mismatch y el filtrado por `tenant_id` en cada query de base de datos forman cuatro capas independientes de aislamiento. Ver [MULTI_TENANCY.md](MULTI_TENANCY.md).
 
-### La Solución: Scoring Automático
+**Base de datos que se valida a si misma.** Mas de 20 funciones PL/pgSQL y 10+ triggers garantizan consistencia ACID sin delegar esa responsabilidad al codigo de aplicacion. pg_cron ejecuta mantenimiento diario directamente en la base de datos. Ver [DATABASE_DESIGN.md](DATABASE_DESIGN.md).
 
-El sistema evalúa automáticamente en segundos:
+**Inventario inteligente con FIFO y reordenamiento automatico.** El sistema de asignacion de stock respeta orden de llegada pero permite prioridad para clientes VIP con efecto cascada documentado. El reordenamiento normaliza cantidades a multiplos del empaque del proveedor. Ver [SMART_INVENTORY.md](SMART_INVENTORY.md).
 
-**Antigüedad del Cliente**
-- < 1 mes → Riesgo ALTO
-- 3-6 meses → Riesgo MEDIO  
-- > 6 meses → Riesgo BAJO
+**Sistema de credito con scoring de riesgo.** El analisis de riesgo crediticio evalua antiguedad, historial de compras, maximo historico y pagos vencidos para generar una recomendacion antes de que el admin tome la decision final. Ver [CREDIT_SYSTEM.md](CREDIT_SYSTEM.md).
 
-**Historial de Compras**
-- Sin historial → ALTO
-- Compras pequeñas/inconsistentes → MEDIO
-- Compras grandes/regulares → BAJO
+**Auditoria forense inmutable.** El Kardex registra cada movimiento de inventario con stock previo y posterior. El auditLogger genera diffs de cambios en formato JSONB. Ninguna de las dos tablas permite UPDATE ni DELETE. Ver [AUDIT_LOGGING.md](AUDIT_LOGGING.md).
 
-**Máximo Histórico**
-- Si pide 3x más de lo que ha gastado → MEDIO/ALTO
-- Si está dentro de lo normal → BAJO
-
-**Pagos Vencidos**
-- Tiene deudas sin pagar → Rechazar automáticamente
-- No tiene deudas → Continuar análisis
-
-**Resultado:** Recomendación automática en segundos
-- 🟢 BAJO → Aprobar 
-- 🟡 MEDIO → Revisar 
-- 🔴 ALTO → Rechazar
-**Nota importante** El sistema no aprueba nada sin revisión del usuario para aún así mantener el control para el usuario
+**Automatizacion de extremo a extremo.** node-cron, pg_cron y triggers de base de datos trabajan en conjunto para actualizar deudas vencidas, notificar restock a favoritos y generar ordenes de compra automaticas ante backorders. Ver [AUTOMATION.md](AUTOMATION.md).
 
 ---
 
-## Casos de Uso Principales
+## Documentacion Tecnica
 
-### 1. Cliente Realiza Pedido
-
-Cliente entra → ve catálogo → agrega a carrito → checkout
-
-Sistema valida:
-- ¿Hay stock suficiente?
-- ¿Cliente tiene crédito disponible?
-- ¿Es cliente del tenant correcto?
-
-Si pasa: reserva stock, procesa pago, crea orden de compra al proveedor (automática si hay backorder)
-
-### 2. Admin Recibe Orden de Compra
-
-Admin compra 100 unidades al proveedor → registra recepción en sistema
-
-Sistema automáticamente:
-- Actualiza stock global
-- Calcula si hay backorders pendientes
-- Asigna stock usando FIFO
-- Degrada/Surtidiza órdenes automáticamente
-- Notifica a clientes: "Tu pedido está listo" o "Sigue en espera"
-
-Resultado: 0 órdenes manuales, todo automático
-
-### 3. Consolidación de Órdenes
-
-5 órdenes pendientes del mismo proveedor con diferentes cantidades
-
-Sistema analiza automáticamente:
-- ¿Hay sobrestock si consolidamos?
-- ¿Cuánto ahorraríamos?
-- ¿Cuál es el impacto en cada orden?
-
-Propone consolidación: "Si agrupas, compras 120 en lugar de 150, ahorras 30 unidades"
-
-Admin aprueba → Sistema crea grupo, mantiene órdenes separadas para billing
+| Documento | Descripcion |
+|---|---|
+| [MULTI_TENANCY.md](MULTI_TENANCY.md) | Como funciona el aislamiento multi-tenant: los tres niveles de segregacion y por que RazoConnect elige Row-Level con proteccion adicional en middleware |
+| [SECURITY_LAYERS.md](SECURITY_LAYERS.md) | Las 10 capas de seguridad implementadas manualmente siguiendo OWASP: desde securityHeaders hasta Row-Level Security en base de datos |
+| [DATABASE_DESIGN.md](DATABASE_DESIGN.md) | Diseno del schema: 6 dominios, diagrama ER, 20+ funciones PL/pgSQL, triggers de sincronizacion y tareas pg_cron |
+| [SMART_INVENTORY.md](SMART_INVENTORY.md) | Algoritmo FIFO con Priority Override, Smart Reordering por empaque de proveedor y notificaciones de restock a favoritos |
+| [CREDIT_SYSTEM.md](CREDIT_SYSTEM.md) | Flujo de solicitud de credito, scoring de riesgo automatico, flujo RMA de devoluciones y estados del ciclo de vida del credito |
+| [AUDIT_LOGGING.md](AUDIT_LOGGING.md) | Kardex inmutable append-only, diff tracking de cambios en JSONB y tipos de eventos auditados |
+| [AUTOMATION.md](AUTOMATION.md) | Todas las automatizaciones del sistema: tareas cron, triggers de base de datos, generacion automatica de ordenes de compra y notificaciones |
+| [MODULES.md](MODULES.md) | Inventario completo de los 20+ modulos del sistema organizados por actor: cliente, admin, agente y sistema |
+| [DEVELOPER.md](DEVELOPER.md) | Perfil tecnico del desarrollador Diego Ferram y descripcion de xCore |
 
 ---
 
-## Stack Tecnológico
-
-### Frontend
-- **Lenguaje:** JavaScript Vanilla (ES6+)
-- **UI Framework:** Bootstrap 5
-- **Validación:** Regex + lógica custom
-
-### Backend
-- **Runtime:** Node.js 18+
-- **Framework:** Express.js
-- **Autenticación:** JWT + Passport.js
-
-### Base de Datos
-- **Motor:** PostgreSQL 17+
-- **Almacenamiento:** Azure Database for PostgreSQL
-
-### Infraestructura
-- **Hosting:** Azure App Service
-- **CDN Imágenes:** Cloudinary
-- **Pagos:** MercadoPago SDK
-- **Email:** Nodemailer SMTP
-- **CI/CD:** GitHub Actions
-
----
-
-## Documentación Técnica Detallada
-
-Este repositorio contiene documentación sobre:
-
-- **[MULTI_TENANCY.md]** - Cómo funciona el aislamiento
-- **[SMART_INVENTORY.md]** - Algoritmo FIFO y asignación
-- **[CREDIT_SYSTEM.md]** - Análisis de riesgo automático
-- **[AUDIT_LOGGING.md]** - Trazabilidad forense
-- **[SECURITY_LAYERS.md]** - Las 4 capas de validación
-- **[DATABASE_DESIGN.md]** - Schema y decisiones
-
----
-
-## Decisiones Arquitectónicas Clave
-
-### ¿Por qué Multi-Tenant?
-
-**Alternativa:** Monolítica por tenant (3 aplicaciones separadas)
-- Ventaja: Aislamiento perfecto
-- Desventaja: Triple mantenimiento, triple costo
-
-**Elegida: Multi-tenant**
-- Ventaja: Mantenimiento único, costos 60% menores, features escalan a todos
-- Desventaja: Complejidad de aislamiento
-
-**Decisión:** Multi-tenant porque el ROI operativo es exponencial.
-
-### ¿Por qué PostgreSQL?
-
-**Alternativa:** MongoDB (NoSQL)
-- Ventaja: Flexible, escalable
-- Desventaja: ACID débil, integridad en auditoría comprometida
-
-**Elegida: PostgreSQL**
-- Ventaja: ACID perfectas, row-level security, triggers, stored procedures
-- Desventaja: Menos flexible
-
-**Decisión:** PostgreSQL porque la auditoría requiere garantías de consistencia.
-
-### ¿Por qué JavaScript Vanilla?
-
-**Alternativa:** Framework (React, Vue)
-- Ventaja: Componentes reutilizables
-- Desventaja: Build step, bundle grande
-
-**Elegida: Vanilla JS**
-- Ventaja: Sin dependencias, bundle pequeño, carga rápida
-- Desventaja: Más código para features complejas
-
-**Decisión:** Vanilla JS porque el frontend es CRUD y conexiones lentas son problema.
-
----
-
-## Lecciones Aprendidas
-
-### 1. Multi-Tenancy desde el Inicio
-Si la agregas después, necesitas reescribir todo. Cada tabla debe tener tenant_id desde el primer migration.
-
-### 2. Auditoría desde Día 1
-No esperes a que reguladores lo pidan. Cada movimiento crítico debe estar auditado desde el principio.
-
-### 3. Transacciones ACID son No-Negociables
-Si un pago se procesa pero el inventario no se actualiza, tienes caos. ACID garantiza "todo o nada".
-
-### 4. Testing Manual es Mejor que Nada
-RazoConnect tiene scripts de test manuales que validan lógica compleja. Deberían ser tests unitarios, pero es mejor tenerlos.
-
-### 5. Documentación es tu Ventaja Competitiva
-El código sin documentación es inutilizable. RazoConnect tiene 10+ documentos que permiten onboarding en horas, no semanas.
-
----
-
-## Métricas de Éxito
-
-| Métrica | Target | Actual |
-|---------|--------|--------|
-| Uptime | 99.5% | 99.8% |
-| Respuesta API | <200ms | 150ms |
-| Concurrent Users | 500+ | 500+ |
-| Errores de Auditoría | 0 | 0 |
-| Discrepancias Inventario | <0.5% | 0.3% |
-
----
-
-## Conclusión
-
-RazoConnect es una demostración de cómo construir:
-
-**Sistemas escalables** para múltiples usuarios simultáneamente  
-**Arquitecturas seguras** con validación en capas  
-**Lógica inteligente** que automatiza decisiones  
-**Auditoría completa** para compliance legal  
-**Documentación** que permite onboarding rápido  
-
----
-
-**Última actualización:** Febrero 2026  
-**Versión:** 1.0 - Case Study público
+Desarrollado por Diego Ferram | xCore — 2025
