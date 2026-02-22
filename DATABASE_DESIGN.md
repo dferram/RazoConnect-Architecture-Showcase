@@ -145,4 +145,4 @@ pg_cron ejecuta funciones de mantenimiento directamente en la base de datos, sin
 
 ---
 
-Desarrollado por Diego Ferram | xCore — 2025
+Desarrollado por Fernando | xCore 
