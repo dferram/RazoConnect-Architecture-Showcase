@@ -4,7 +4,7 @@
 
 ## Tabla de Contenidos
 
-- [Quien es Fernando](#quien-es-Fernadno)
+- [Quien es Fernando Ramírez](#quien-es-fernando-ramírez)
 - [Habilidades Demostradas en RazoConnect](#habilidades-demostradas-en-razoconnect)
 - [Filosofia de Desarrollo](#filosofia-de-desarrollo)
 - [xCore](#xcore)
@@ -12,9 +12,9 @@
 
 ---
 
-## Quien es Diego Ferram
+## Quien es Fernando Ramírez
 
-Diego Ferram es un desarrollador de software fullstack con especializacion en backend, sistemas empresariales y arquitecturas multi-tenant. Es el fundador de xCore, empresa de desarrollo de software enfocada en soluciones backend-heavy para el mercado mexicano y latinoamericano.
+Fernando es un desarrollador de software fullstack con especializacion en backend, sistemas empresariales y arquitecturas multi-tenant. Es el fundador de <a href="https://xcore-byg8fkdve4eyatbz.mexicocentral-01.azurewebsites.net/">xCore</a>, empresa de desarrollo de software enfocada en soluciones backend-heavy para el mercado mexicano y latinoamericano.
 
 Su enfoque no se limita a escribir codigo que funcione. Cada decision en sus proyectos considera seguridad, escalabilidad operativa y facilidad de mantenimiento a largo plazo. RazoConnect es el ejemplo mas completo de ese enfoque: un sistema en produccion con inventario inteligente, credito con scoring automatico, auditoria forense inmutable y diez capas de seguridad implementadas sin depender de paquetes de terceros.
 
@@ -43,7 +43,7 @@ GitHub: [github.com/dferram](https://github.com/dferram)
 
 ## Filosofia de Desarrollo
 
-Diego no escribe codigo para que compile, lo escribe para que dure. Cada decision en RazoConnect tiene una razon: el rate limiter se implemento sin dependencias externas porque una dependencia menos es un vector de ataque menos. Las cabeceras de seguridad se escribieron a mano porque entender lo que hace cada una es mas importante que instalar un paquete. La arquitectura multi-tenant se eligio como Row-Level en lugar de bases de datos separadas porque el ROI operacional es exponencial a escala.
+Fernando no escribe codigo para que compile, lo escribe para que dure. Cada decision en RazoConnect tiene una razon: el rate limiter se implemento sin dependencias externas porque una dependencia menos es un vector de ataque menos. Las cabeceras de seguridad se escribieron a mano porque entender lo que hace cada una es mas importante que instalar un paquete. La arquitectura multi-tenant se eligio como Row-Level en lugar de bases de datos separadas porque el ROI operacional es exponencial a escala.
 
 La auditoria forense no fue un requerimiento regulatorio, fue una decision de diseno desde el dia uno. El Kardex de inventario y el diff tracking en el audit log no son features adicionales: son la garantia de que el sistema puede responder a cualquier pregunta sobre su historia con evidencia verificable.
 
@@ -53,9 +53,9 @@ La seguridad no se delega a un paquete. Se entiende, se implementa y se document
 
 ## xCore
 
-xCore es el estudio de desarrollo de software fundado por Diego Ferram. Se especializa en sistemas empresariales backend-heavy para el mercado mexicano y latinoamericano: plataformas de ventas, sistemas de inventario, integraciones de pago, y soluciones SaaS multi-tenant.
+<a href="https://xcore-byg8fkdve4eyatbz.mexicocentral-01.azurewebsites.net/">xCore</a> es el estudio de desarrollo de software fundado por Fernando Ramírez. Se especializa en sistemas empresariales backend-heavy para el mercado mexicano y latinoamericano: plataformas de ventas, sistemas de inventario, integraciones de pago, y soluciones SaaS multi-tenant.
 
-El enfoque de xCore es construir sistemas que los equipos que los heredan puedan entender, mantener y extender sin necesidad del autor original. Eso se logra con documentacion tecnica exhaustiva, arquitecturas predecibles y codigo que expresa intencion, no solo implementacion.
+El enfoque de <a href="https://xcore-byg8fkdve4eyatbz.mexicocentral-01.azurewebsites.net/">xCore</a> es construir sistemas que los equipos que los heredan puedan entender, mantener y extender sin necesidad del autor original. Eso se logra con documentacion tecnica exhaustiva, arquitecturas predecibles y codigo que expresa intencion, no solo implementacion.
 
 GitHub: [github.com/dferram](https://github.com/dferram)
 
@@ -100,4 +100,4 @@ flowchart TD
 
 ---
 
-Desarrollado por Fernando Ramírez | xCore 
+Desarrollado por Fernando Ramírez | <a href="https://xcore-byg8fkdve4eyatbz.mexicocentral-01.azurewebsites.net/">xCore</a> 

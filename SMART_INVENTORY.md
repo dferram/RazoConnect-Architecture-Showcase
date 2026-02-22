@@ -105,4 +105,4 @@ El resultado es una sugerencia que el administrador puede aprobar o rechazar. Si
 
 ---
 
-Desarrollado por Diego Ferram | xCore — 2025
+Desarrollado por Fernando Ramírez | <a href="https://xcore-byg8fkdve4eyatbz.mexicocentral-01.azurewebsites.net/">xCore</a>

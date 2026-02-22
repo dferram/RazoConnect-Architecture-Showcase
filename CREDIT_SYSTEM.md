@@ -116,4 +116,4 @@ Al aprobar una devolucion, el sistema ejecuta las cuatro acciones de forma atomi
 
 ---
 
-Desarrollado por Fernando Ramírez | [xCore](https://xcore-byg8fkdve4eyatbz.mexicocentral-01.azurewebsites.net/)
+Desarrollado por Fernando Ramírez | <a href="https://xcore-byg8fkdve4eyatbz.mexicocentral-01.azurewebsites.net/">xCore</a>
