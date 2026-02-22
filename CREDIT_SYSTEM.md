@@ -116,4 +116,4 @@ Al aprobar una devolucion, el sistema ejecuta las cuatro acciones de forma atomi
 
 ---
 
-Desarrollado por Diego Ferram | xCore — 2025
+Desarrollado por Fernando | xCore
