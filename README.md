@@ -86,4 +86,4 @@ El flujo comienza en el dominio del tenant. Cada hostname se resuelve a un regis
 
 ---
 
-Desarrollado por Diego Ferram | xCore — 2025
+Desarrollado por Fernando Ramírez | xCore — 2025
