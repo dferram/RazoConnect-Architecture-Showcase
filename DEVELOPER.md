@@ -1,10 +1,10 @@
-# Diego Ferram — Perfil Tecnico
+# Fernando Ramírez - Perfil Técnico
 
 ---
 
 ## Tabla de Contenidos
 
-- [Quien es Diego Ferram](#quien-es-diego-ferram)
+- [Quien es Fernando](#quien-es-Fernadno)
 - [Habilidades Demostradas en RazoConnect](#habilidades-demostradas-en-razoconnect)
 - [Filosofia de Desarrollo](#filosofia-de-desarrollo)
 - [xCore](#xcore)
@@ -100,4 +100,4 @@ flowchart TD
 
 ---
 
-Desarrollado por Diego Ferram | xCore — 2025
+Desarrollado por Fernando Ramírez | xCore 
