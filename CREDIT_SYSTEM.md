@@ -21,7 +21,7 @@ flowchart TD
     Cliente["Cliente solicita credito"] --> Solicitud["POST /api/creditos/solicitar"]
     Solicitud --> Analisis["creditAnalysisService.analizarRiesgoCredito()"]
     Analisis --> Factores["Calcular:\n- Antiguedad en meses\n- Max ticket historico\n- Frecuencia de compras\n- Pagos vencidos"]
-    Factores --> Nivel{"Nivel de riesgo"}
+    Factores --> Nivel{""]
     Nivel -->|"Antiguedad > 6 meses\nMonto <= max * 1.5\nPedidos > 3"| Bajo["BAJO"]
     Nivel -->|"Antiguedad 1-6 meses\nMonto <= max * 2.5"| Medio["MEDIO"]
     Nivel -->|"Nuevos o monto excesivo\nSin historial"| Alto["ALTO"]
@@ -116,4 +116,4 @@ Al aprobar una devolucion, el sistema ejecuta las cuatro acciones de forma atomi
 
 ---
 
-Desarrollado por Fernando | xCore
+Desarrollado por Fernando Ramírez | [xCore](https://xcore-byg8fkdve4eyatbz.mexicocentral-01.azurewebsites.net/)
