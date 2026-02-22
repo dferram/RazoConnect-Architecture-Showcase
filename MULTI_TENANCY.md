@@ -144,4 +144,4 @@ Este comportamiento garantiza que una cookie robada de un tenant no pueda ser us
 
 ---
 
-Desarrollado por Fernando | xCore
+Desarrollado por Fernando Ramírez | <a href="https://xcore-byg8fkdve4eyatbz.mexicocentral-01.azurewebsites.net/">xCore</a>

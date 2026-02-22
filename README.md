@@ -82,8 +82,8 @@ El flujo comienza en el dominio del tenant. Cada hostname se resuelve a un regis
 | [AUDIT_LOGGING.md](AUDIT_LOGGING.md) | Kardex inmutable append-only, diff tracking de cambios en JSONB y tipos de eventos auditados |
 | [AUTOMATION.md](AUTOMATION.md) | Todas las automatizaciones del sistema: tareas cron, triggers de base de datos, generacion automatica de ordenes de compra y notificaciones |
 | [MODULES.md](MODULES.md) | Inventario completo de los 20+ modulos del sistema organizados por actor: cliente, admin, agente y sistema |
-| [DEVELOPER.md](DEVELOPER.md) | Perfil tecnico del desarrollador Diego Ferram y descripcion de xCore |
+| [DEVELOPER.md](DEVELOPER.md) | Perfil tecnico del desarrollador Fernando Ramírez y descripcion de <a href="https://xcore-byg8fkdve4eyatbz.mexicocentral-01.azurewebsites.net/">xCore</a> |
 
 ---
 
-Desarrollado por Fernando Ramírez | xCore — 2025
+Desarrollado por Fernando Ramírez | <a href="https://xcore-byg8fkdve4eyatbz.mexicocentral-01.azurewebsites.net/">xCore</a>

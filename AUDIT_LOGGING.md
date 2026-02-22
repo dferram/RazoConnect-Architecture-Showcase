@@ -89,4 +89,4 @@ Solo se almacenan los campos que cambiaron. Un pedido con 20 campos del que solo
 
 ---
 
-Desarrollado por Fernando | xCore 
+Desarrollado por Fernando Ramírez | <a href="https://xcore-byg8fkdve4eyatbz.mexicocentral-01.azurewebsites.net/">xCore</a> 

@@ -124,4 +124,4 @@ La sugerencia incluye: ordenes involucradas, cantidad actual vs cantidad optimiz
 
 ---
 
-Desarrollado por Fernando | xCore 
+Desarrollado por Fernando Ramírez | <a href="https://xcore-byg8fkdve4eyatbz.mexicocentral-01.azurewebsites.net/">xCore</a> 

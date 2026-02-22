@@ -96,4 +96,4 @@ Los middlewares de seguridad (tenantGuard, authMiddleware, tenantSessionGuard) s
 
 ---
 
-Desarrollado por Diego Ferram | xCore — 2025
+Desarrollado por Fernando Ramírez | <a href="https://xcore-byg8fkdve4eyatbz.mexicocentral-01.azurewebsites.net/">xCore</a>
