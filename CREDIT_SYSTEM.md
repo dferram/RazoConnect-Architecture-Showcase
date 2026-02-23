@@ -18,17 +18,20 @@ RazoConnect incluye un modulo de credito completo que cubre el ciclo de vida des
 
 ```mermaid
 flowchart TD
-    Cliente["Cliente solicita credito"] --> Solicitud["POST /api/creditos/solicitar"]
+    Cliente["Cliente solicita crédito"] --> Solicitud["POST /api/creditos/solicitar"]
     Solicitud --> Analisis["creditAnalysisService.analizarRiesgoCredito()"]
-    Analisis --> Factores["Calcular:\n- Antiguedad en meses\n- Max ticket historico\n- Frecuencia de compras\n- Pagos vencidos"]
-    Factores --> Nivel{""]
-    Nivel -->|"Antiguedad > 6 meses\nMonto <= max * 1.5\nPedidos > 3"| Bajo["BAJO"]
-    Nivel -->|"Antiguedad 1-6 meses\nMonto <= max * 2.5"| Medio["MEDIO"]
-    Nivel -->|"Nuevos o monto excesivo\nSin historial"| Alto["ALTO"]
+    Analisis --> Factores["Calcular:\n- Antigüedad en meses\n- Max ticket histórico\n- Frecuencia de compras\n- Pagos vencidos"]
+    Factores --> Nivel{"¿Nivel de riesgo?"}
+    
+    Nivel -->|"Antigüedad > 6 meses\nMonto <= max * 1.5\nPedidos > 3"| Bajo["BAJO"]
+    Nivel -->|"Antigüedad 1-6 meses\nMonto <= max * 2.5"| Medio["MEDIO"]
+    Nivel -->|"Nuevo o monto excesivo\nSin historial"| Alto["ALTO"]
+    
     Bajo --> Admin["Admin revisa y aprueba/rechaza"]
     Medio --> Admin
     Alto --> Admin
-    Admin --> Aprobado["Credito ACTIVO\nLimite asignado"]
+    
+    Admin --> Aprobado["Crédito ACTIVO\nLímite asignado"]
 ```
 
 El sistema genera una recomendacion automatica pero no aprueba ni rechaza de forma autonoma. El administrador siempre tiene la decision final. Esto preserva el control humano sobre compromisos financieros mientras elimina el trabajo manual de recopilar y calcular los factores de riesgo.
