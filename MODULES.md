@@ -1,4 +1,7 @@
-# Modulos del Sistema
+# Modulos del Sistema / System Modules
+
+<details open>
+<summary>🇲🇽 Español</summary>
 
 RazoConnect esta organizado en mas de 20 modulos funcionales, cada uno con sus propias rutas, controladores y servicios. Los modulos se agrupan por el actor principal que los utiliza: clientes, administradores, agentes de venta y el sistema automatizado.
 
@@ -68,15 +71,16 @@ flowchart TD
 | notificaciones | Todos | Sistema de notificaciones in-app con lectura, archivo y conteo de no leidas |
 | clientes | Admin / Agente | Gestion completa de clientes: alta, edicion, historial de compras, estado de credito |
 | staff | Admin | Gestion de usuarios internos del tenant (admins, agentes, viewers) con control de roles |
-| creditos | Admin / Cliente | Lineas de credito: solicitud, analisis de riesgo, aprobacion, historial de pagos y estado de deuda |
-| pagos | Cliente / Sistema | Integracion con MercadoPago: crear preferencias de pago, manejar webhooks y actualizar estado de pedidos |
-| cupones | Admin / Cliente | Descuentos por porcentaje o monto fijo, con fecha de expiracion y limite de usos |
-| developer | Sistema | Rutas de mantenimiento y herramientas internas: auditoria de secretos, migraciones, diagnosticos |
-| remisiones | Admin | Documentos de remision para entrega fisica de mercancia; generacion de PDF con folio unico |
-| agente | Agente | Portal de agentes de ventas: ver clientes asignados, crear pedidos en nombre de clientes, ver comisiones |
-| inventario | Admin | Gestion de stock: entradas, salidas, ajustes, Kardex, toma fisica y sesiones de conteo |
-| devoluciones | Cliente / Admin | RMA completo: solicitud, validacion de elegibilidad, aprobacion con reintegro automatico de stock |
-| favoritos | Cliente | Lista de deseos con alertas de restock activables por variante |
+| inventario | Admin / Agente | Kardex de movimientos, sesiones de inventario con asignacion de agentes, ajustes y auditorias |
+| devoluciones | Admin / Cliente | Sistema RMA: solicitudes, evidencias fotograficas, reintegro de stock y ajuste de cuentas por cobrar |
+| creditos | Admin / Cliente | Solicitud de credito, scoring de riesgo automatico, aprobacion manual, suspension por vencimiento |
+| comisiones | Admin / Agente | Calculo automatico de comisiones al entregar pedidos, esquemas configurables por agente, reportes |
+| agentes | Admin | Gestion de agentes de venta: alta, cartera de clientes asignada, metas y metricas |
+| ordenes-compra | Admin | Ordenes de compra a proveedores con Smart Reordering, recepcion y validacion de empaque |
+| favoritos | Cliente | Lista de productos favoritos con alertas de restock automaticas cuando el stock se repone |
+| cupones | Admin / Cliente | Creacion y aplicacion de cupones de descuento: porcentaje, monto fijo, con fecha de vencimiento |
+| pagos | Cliente | Integracion con MercadoPago SDK: checkout, webhooks de confirmacion, reconciliacion de estado |
+| developer | Super Admin | Panel global para crear y gestionar tenants, configurar dominios y monitorear salud del sistema |
 
 ---
 
@@ -86,10 +90,10 @@ Todos los modulos siguen la misma estructura de capas, lo que facilita el onboar
 
 ```mermaid
 flowchart LR
-    Router["routes/modulo.js\nDefinicion de endpoints\ny middlewares aplicables"] --> Controller["controllers/moduloController.js\nValidacion de request\nOrquestacion de servicios"]
-    Controller --> Service["services/moduloService.js\nLogica de negocio\nConsultas a BD"]
-    Service --> DB["PostgreSQL\nQueries con tenant_id"]
-    Service --> External["Servicios externos\nCloudinary / MercadoPago / Nodemailer"]
+    Route["routes/modulo.js"] --> Controller["controllers/moduloController.js"]
+    Controller --> Service["services/moduloService.js"]
+    Service --> DB["PostgreSQL\nWHERE tenant_id = $1"]
+    Controller --> Middleware["middlewares/\nauth, tenantGuard, rateLimiter"]
 ```
 
 Los middlewares de seguridad (tenantGuard, authMiddleware, tenantSessionGuard) se aplican en el router antes de que la peticion llegue al controlador. Los controladores validan el request y coordinan los servicios, pero no contienen logica de negocio. Los servicios son los unicos que hablan con la base de datos o con servicios externos.
@@ -97,3 +101,109 @@ Los middlewares de seguridad (tenantGuard, authMiddleware, tenantSessionGuard) s
 ---
 
 Desarrollado por Fernando Ramírez | <a href="https://xcore-byg8fkdve4eyatbz.mexicocentral-01.azurewebsites.net/">xCore</a>
+
+</details>
+
+<details>
+<summary>🇺🇸 English</summary>
+
+RazoConnect is organized into more than 20 functional modules, each with its own routes, controllers, and services. Modules are grouped by the primary actor that uses them: clients, administrators, sales agents, and the automated system.
+
+---
+
+## Table of Contents
+
+- [Module Map by Actor](#module-map-by-actor)
+- [Complete Module Inventory](#complete-module-inventory)
+- [Module Architecture](#module-architecture)
+
+---
+
+## Module Map by Actor
+
+```mermaid
+flowchart TD
+    subgraph Cliente
+        C1[Catalogo de productos]
+        C2[Carrito y pedidos]
+        C3[Credito y pagos]
+        C4[Devoluciones RMA]
+        C5[Favoritos y alertas]
+        C6[Notificaciones]
+    end
+
+    subgraph Admin
+        A1[Panel de gestion]
+        A2[Inventario y Kardex]
+        A3[Ordenes de compra]
+        A4[Clientes y creditos]
+        A5[Reportes Excel y PDF]
+        A6[Cupones y descuentos]
+        A7[Landing configurable]
+    end
+
+    subgraph Agente
+        AG1[Portal de agentes]
+        AG2[Mis clientes]
+        AG3[Comisiones]
+        AG4[Crear pedidos para clientes]
+    end
+
+    subgraph Sistema
+        S1[Cron jobs diarios]
+        S2[Triggers de BD]
+        S3[Emails automaticos]
+        S4[Notificaciones de restock]
+        S5[Auditoria y bitacora]
+    end
+```
+
+---
+
+## Complete Module Inventory
+
+| Module | Primary Actor | Description |
+|---|---|---|
+| auth | All | Login with email/password, registration, Google OAuth 2.0, and logout. Handles session with express-session and JWT simultaneously |
+| productos | Admin / Client | Product catalog with variants (size, color, etc.), image management with Sharp processing before uploading to Cloudinary |
+| carrito | Client | Add, remove, and calculate the shopping cart with real-time stock validation |
+| pedidos | Client / Admin | Order creation, status updates, PDF generation of delivery receipts with PDFKit |
+| direcciones | Client | Management of multiple shipping addresses per client |
+| admin | Admin | Central administrative panel with access to all tenant resources |
+| reportes | Admin | Export reports to Excel with ExcelJS: accounts receivable, movements, sales by period |
+| public | All | Configurable tenant landing page from the admin panel; supports seasonal visual themes |
+| notificaciones | All | In-app notification system with read, archive, and unread count |
+| clientes | Admin / Agent | Complete client management: registration, editing, purchase history, credit status |
+| staff | Admin | Management of internal tenant users (admins, agents, viewers) with role control |
+| inventario | Admin / Agent | Movement Kardex, inventory sessions with agent assignment, adjustments, and audits |
+| devoluciones | Admin / Client | RMA system: requests, photographic evidence, stock reintegration, and accounts receivable adjustment |
+| creditos | Admin / Client | Credit request, automatic risk scoring, manual approval, suspension for overdue |
+| comisiones | Admin / Agent | Automatic commission calculation on order delivery, configurable schemes per agent, reports |
+| agentes | Admin | Sales agent management: registration, assigned client portfolio, goals, and metrics |
+| ordenes-compra | Admin | Purchase orders to suppliers with Smart Reordering, reception, and packaging validation |
+| favoritos | Client | Product favorites list with automatic restock alerts when stock is replenished |
+| cupones | Admin / Client | Creation and application of discount coupons: percentage, fixed amount, with expiration date |
+| pagos | Client | Integration with MercadoPago SDK: checkout, confirmation webhooks, status reconciliation |
+| developer | Super Admin | Global panel to create and manage tenants, configure domains, and monitor system health |
+
+---
+
+## Module Architecture
+
+All modules follow the same layered structure, which facilitates onboarding and maintenance.
+
+```mermaid
+flowchart LR
+    Route["routes/modulo.js"] --> Controller["controllers/moduloController.js"]
+    Controller --> Service["services/moduloService.js"]
+    Service --> DB["PostgreSQL\nWHERE tenant_id = $1"]
+    Controller --> Middleware["middlewares/\nauth, tenantGuard, rateLimiter"]
+```
+
+The security middlewares (tenantGuard, authMiddleware, tenantSessionGuard) are applied at the router level before the request reaches the controller. Controllers validate the request and coordinate services, but do not contain business logic. Services are the only ones that communicate with the database or external services.
+
+---
+
+Developed by Fernando Ramírez | <a href="https://xcore-byg8fkdve4eyatbz.mexicocentral-01.azurewebsites.net/">xCore</a>
+
+</details>

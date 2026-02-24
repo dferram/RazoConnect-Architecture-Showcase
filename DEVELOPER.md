@@ -1,4 +1,7 @@
-# Fernando Ramírez - Perfil Técnico
+# Fernando Ramírez - Perfil Técnico / Fernando Ramírez - Technical Profile
+
+<details open>
+<summary>🇲🇽 Español</summary>
 
 ---
 
@@ -100,4 +103,113 @@ flowchart TD
 
 ---
 
-Desarrollado por Fernando Ramírez | <a href="https://xcore-byg8fkdve4eyatbz.mexicocentral-01.azurewebsites.net/">xCore</a> 
+Desarrollado por Fernando Ramírez | <a href="https://xcore-byg8fkdve4eyatbz.mexicocentral-01.azurewebsites.net/">xCore</a>
+
+</details>
+
+<details>
+<summary>🇺🇸 English</summary>
+
+---
+
+## Table of Contents
+
+- [Who is Fernando Ramírez](#who-is-fernando-ramírez)
+- [Skills Demonstrated in RazoConnect](#skills-demonstrated-in-razoconnect)
+- [Development Philosophy](#development-philosophy)
+- [xCore](#xcore-1)
+- [Knowledge Map](#knowledge-map)
+
+---
+
+## Who is Fernando Ramírez
+
+Fernando is a fullstack software developer specializing in backend, enterprise systems, and multi-tenant architectures. He is the founder of <a href="https://xcore-byg8fkdve4eyatbz.mexicocentral-01.azurewebsites.net/">xCore</a>, a software development company focused on backend-heavy solutions for the Mexican and Latin American market.
+
+His approach is not limited to writing code that works. Every decision in his projects considers security, operational scalability, and long-term maintainability. RazoConnect is the most complete example of that approach: a production system with smart inventory, credit with automatic scoring, immutable forensic audit, and ten security layers implemented without relying on third-party packages.
+
+GitHub: [github.com/dferram](https://github.com/dferram)
+
+---
+
+## Skills Demonstrated in RazoConnect
+
+| Skill | Evidence in the code |
+|---|---|
+| Multi-tenant architecture | Row-Level Isolation with 4 security layers, automatic tenant detection by HTTP domain |
+| OWASP Security | CSP, HSTS, rate limiting without dependencies, recursive input sanitization, secrets audit on startup, no helmet |
+| Database design | 20+ normalized tables, 20+ PL/pgSQL functions, 10+ synchronization triggers, pg_cron for daily maintenance |
+| Node.js / Express backend | 20+ modules, layered architecture (routes → controllers → services → DB), reusable middlewares |
+| Payment integration | MercadoPago SDK with webhook handling, payment state reconciliation, and order updates |
+| File management | Cloudinary + Sharp for image optimization (resize, compression) before uploading |
+| Communication | Nodemailer with Handlebars templates compiled at runtime for transactional emails |
+| Document generation | PDFKit for delivery receipts and invoices, ExcelJS for accounts receivable reports |
+| Complex business logic | Credit system with risk scoring, inventory FIFO with Priority Override, RMA, agent commissions |
+| Automation | node-cron + PL/pgSQL triggers + pg_cron + automatic purchase order generation for backorders |
+| OAuth | Google OAuth 2.0 with Passport.js integrated with the project's session and JWT system |
+| Audited change control | ChangeRequestService: critical changes are recorded as requests before being applied, with diff in JSONB |
+
+---
+
+## Development Philosophy
+
+Fernando doesn't write code for it to compile, he writes it to last. Every decision in RazoConnect has a reason: the rate limiter was implemented without external dependencies because one fewer dependency is one fewer attack vector. Security headers were written by hand because understanding what each one does is more important than installing a package. The multi-tenant architecture was chosen as Row-Level instead of separate databases because the operational ROI is exponential at scale.
+
+Forensic auditing was not a regulatory requirement; it was a design decision from day one. The inventory Kardex and diff tracking in the audit log are not additional features: they are the guarantee that the system can answer any question about its history with verifiable evidence.
+
+Security is not delegated to a package. It is understood, implemented, and documented.
+
+---
+
+## xCore
+
+<a href="https://xcore-byg8fkdve4eyatbz.mexicocentral-01.azurewebsites.net/">xCore</a> is the software development studio founded by Fernando Ramírez. It specializes in backend-heavy enterprise systems for the Mexican and Latin American market: sales platforms, inventory systems, payment integrations, and multi-tenant SaaS solutions.
+
+xCore's approach is to build systems that the teams who inherit them can understand, maintain, and extend without the original author. This is achieved through exhaustive technical documentation, predictable architectures, and code that expresses intent, not just implementation.
+
+GitHub: [github.com/dferram](https://github.com/dferram)
+
+---
+
+## Knowledge Map
+
+```mermaid
+flowchart TD
+    subgraph Backend
+        B1[Node.js / Express]
+        B2[PostgreSQL / PL/pgSQL]
+        B3[REST API Design]
+        B4[JWT / OAuth / Sessions]
+    end
+
+    subgraph Seguridad
+        S1[OWASP Top 10]
+        S2[Multi-tenant isolation]
+        S3[Rate limiting]
+        S4[Input sanitization]
+    end
+
+    subgraph Integraciones
+        I1[MercadoPago]
+        I2[Cloudinary / Sharp]
+        I3[Nodemailer]
+        I4[Google OAuth]
+    end
+
+    subgraph Automatizacion
+        A1[node-cron]
+        A2[Triggers PL/pgSQL]
+        A3[pg_cron]
+    end
+
+    subgraph Documentos
+        D1[PDFKit]
+        D2[ExcelJS]
+    end
+```
+
+---
+
+Developed by Fernando Ramírez | <a href="https://xcore-byg8fkdve4eyatbz.mexicocentral-01.azurewebsites.net/">xCore</a>
+
+</details>
