@@ -1,4 +1,7 @@
-# Sistema de Inventario Inteligente
+# Sistema de Inventario Inteligente / Smart Inventory System
+
+<details open>
+<summary>🇲🇽 Español</summary>
 
 RazoConnect gestiona el inventario con tres mecanismos que trabajan en conjunto: asignacion FIFO con Priority Override para distribuir el stock disponible entre ordenes pendientes, Smart Reordering para normalizar cantidades de compra al empaque del proveedor, y notificaciones de restock a clientes con alertas activas en favoritos.
 
@@ -106,3 +109,117 @@ El resultado es una sugerencia que el administrador puede aprobar o rechazar. Si
 ---
 
 Desarrollado por Fernando Ramírez | <a href="https://xcore-byg8fkdve4eyatbz.mexicocentral-01.azurewebsites.net/">xCore</a>
+
+</details>
+
+<details>
+<summary>🇺🇸 English</summary>
+
+RazoConnect manages inventory with three mechanisms working together: FIFO allocation with Priority Override to distribute available stock among pending orders, Smart Reordering to normalize purchase quantities to the supplier's packaging, and restock notifications to clients with active alerts in favorites.
+
+---
+
+## Table of Contents
+
+- [FIFO with Priority Override](#fifo-with-priority-override)
+- [Inventory Allocation Flow](#inventory-allocation-flow)
+- [Smart Reordering](#smart-reordering-1)
+- [Restock Notifications to Favorites](#restock-notifications-to-favorites)
+- [OptimizationService](#optimizationservice-1)
+
+---
+
+## FIFO with Priority Override
+
+The base algorithm is FIFO (First In, First Out): orders are fulfilled in the order they arrived. However, VIP client orders can move ahead in the queue. When a VIP order takes stock that was assigned to a normal order, that normal order is automatically downgraded and the client receives a notification.
+
+This behavior is deliberate. Pure FIFO is fair but ignorant of the commercial value of each client. Priority Override allows the business to honor its commitments to strategic clients without abandoning transparency: each downgrade is recorded and notified.
+
+```mermaid
+flowchart TD
+    Stock["Stock disponible: 1000 unidades"]
+    OrdenA["Orden A — Normal — 500u — hace 5 dias"]
+    OrdenB["Orden B — Normal — 300u — hace 3 dias"]
+    OrdenC["Orden C — VIP — 250u — hace 1 dia"]
+
+    Stock --> OrdenA
+    OrdenA --> Surtida_A["Orden A Surtida\nStock restante: 500"]
+    Surtida_A --> OrdenB
+    OrdenB --> Surtida_B["Orden B Surtida\nStock restante: 200"]
+    Surtida_B --> OrdenC
+    OrdenC --> VIP_Check{"VIP con stock insuficiente\nToma stock de normales"}
+    VIP_Check --> Degradacion["Orden B degradada a PARCIAL\nOrden C Surtida"]
+    Degradacion --> Notificacion["Notificacion automatica a cliente de Orden B"]
+```
+
+---
+
+## Inventory Allocation Flow
+
+```mermaid
+sequenceDiagram
+    participant Admin as Admin
+    participant SS as SmartStockService
+    participant DB as PostgreSQL
+    participant Cliente as Cliente
+
+    Admin->>SS: Nueva entrada de stock (1000 unidades)
+    SS->>DB: SELECT ordenes_pendientes ORDER BY es_prioritario DESC, fecha_creacion ASC
+    DB-->>SS: [OrdenA, OrdenB, OrdenC_VIP]
+    SS->>SS: Ejecutar algoritmo FIFO + Priority Override
+    SS->>DB: UPDATE pedidos SET estatus, cantidad_surtida, cantidad_backorder
+    SS->>DB: INSERT INTO movimientos_inventario (Kardex)
+    SS->>DB: INSERT INTO notificaciones (clientes afectados)
+    DB-->>Cliente: Notificacion: "Tu pedido fue actualizado"
+```
+
+---
+
+## Smart Reordering
+
+Suppliers sell in packaging multiples: boxes of 12, packs of 24, packages of 6. When the system generates an automatic purchase order, it normalizes the requested quantity to the next multiple of the supplier's packaging.
+
+```mermaid
+flowchart LR
+    Solicitud["Cantidad solicitada: 7"] --> Regla["Regla de empaque: 5"]
+    Regla --> Calculo["ceil(7 / 5) * 5 = 10"]
+    Calculo --> Resultado["Cantidad normalizada: 10\nSobrante: 3"]
+```
+
+The surplus is not wasted. It remains available in inventory to cover other pending or future orders. This reduces the number of required purchase orders and optimizes the logistics cost per unit.
+
+---
+
+## Restock Notifications to Favorites
+
+When a client adds a product variant to favorites with the restock alert active, the system records it. When that variant receives new stock, the inventory service automatically notifies all clients with an active alert and deactivates the alert to avoid duplicate notifications.
+
+```mermaid
+sequenceDiagram
+    participant Admin as Admin
+    participant Inv as inventoryService
+    participant DB as PostgreSQL
+    participant Cliente as Cliente
+
+    Admin->>Inv: Registrar entrada de stock (variante_id: 42)
+    Inv->>DB: UPDATE stock_admin SET cantidad = cantidad + X
+    Inv->>DB: SELECT clientes_favoritos WHERE variante_id = 42 AND alerta_restock_activa = TRUE
+    DB-->>Inv: [cliente_1, cliente_2, cliente_3]
+    Inv->>DB: INSERT INTO notificaciones (clienteid, tipo='restock', ...)
+    Inv->>DB: UPDATE clientes_favoritos SET alerta_restock_activa = FALSE
+    DB-->>Cliente: Notificacion: "Tu producto favorito esta disponible"
+```
+
+---
+
+## OptimizationService
+
+The OptimizationService analyzes the system's pending purchase orders and detects consolidation opportunities. When there are multiple pending orders for the same supplier and the same product, the service calculates the potential savings from consolidating them into a single order and the optimal quantity considering the supplier's packaging.
+
+The result is a suggestion that the administrator can approve or reject. If approved, the system creates a consolidated order group while maintaining individual tracking of each order for billing and receiving purposes.
+
+---
+
+Developed by Fernando Ramírez | <a href="https://xcore-byg8fkdve4eyatbz.mexicocentral-01.azurewebsites.net/">xCore</a>
+
+</details>

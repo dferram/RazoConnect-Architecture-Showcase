@@ -1,4 +1,7 @@
-# Multi-Tenancy en RazoConnect
+# Multi-Tenancy en RazoConnect / Multi-Tenancy in RazoConnect
+
+<details open>
+<summary>🇲🇽 Español</summary>
 
 RazoConnect sirve a multiples negocios desde una sola instancia de aplicacion y una sola base de datos. Cada negocio opera de forma completamente aislada: sus productos, clientes, pedidos y configuracion nunca son visibles para otro negocio, aunque compartan servidor, proceso y esquema de base de datos.
 
@@ -145,3 +148,156 @@ Este comportamiento garantiza que una cookie robada de un tenant no pueda ser us
 ---
 
 Desarrollado por Fernando Ramírez | <a href="https://xcore-byg8fkdve4eyatbz.mexicocentral-01.azurewebsites.net/">xCore</a>
+
+</details>
+
+<details>
+<summary>🇺🇸 English</summary>
+
+RazoConnect serves multiple businesses from a single application instance and a single database. Each business operates in complete isolation: its products, clients, orders, and configuration are never visible to another business, even though they share the same server, process, and database schema.
+
+---
+
+## Table of Contents
+
+- [What is Multi-Tenancy](#what-is-multi-tenancy)
+- [The Three Levels of Segregation](#the-three-levels-of-segregation)
+- [Why Row-Level](#why-row-level)
+- [Tenant Detection by Domain](#tenant-detection-by-domain)
+- [The Four Isolation Layers](#the-four-isolation-layers)
+- [Session Destruction on Mismatch](#session-destruction-on-mismatch)
+- [Attack Scenarios and Mitigation](#attack-scenarios-and-mitigation)
+
+---
+
+## What is Multi-Tenancy
+
+Multi-tenancy is an architecture where a single application instance serves multiple clients (tenants), with each client believing they have their own private application. In RazoConnect, a tenant is a wholesale business: Razo, Fashion Plus, TechPro. They all share the same server and the same database, but their data is completely separate.
+
+---
+
+## The Three Levels of Segregation
+
+There are three main approaches to achieving isolation in multi-tenant systems. The decision of which to use has significant operational and cost consequences.
+
+| Level | Description | Advantages | Disadvantages |
+|---|---|---|---|
+| Database Segregation | Each tenant has its own database | Perfect isolation, independent scalability | Triple infrastructure cost, migrations multiplied per tenant |
+| Schema Segregation | Same database, separate schemas per tenant | One PostgreSQL, lower cost than separate DBs | Migrations across multiple schemas, queries must know the schema |
+| Row-Level Isolation | Same DB, same schema, each row has tenant_id | One codebase, one deployment, features scale to all automatically | Requires discipline: every query must filter by tenant_id |
+
+```mermaid
+flowchart TD
+    subgraph DB_SEG["Database Segregation"]
+        T1["Tenant A\nPostgreSQL DB 1"]
+        T2["Tenant B\nPostgreSQL DB 2"]
+        T3["Tenant C\nPostgreSQL DB 3"]
+    end
+
+    subgraph SCH_SEG["Schema Segregation"]
+        PG["PostgreSQL DB"]
+        S1["Schema tenant_a"]
+        S2["Schema tenant_b"]
+        S3["Schema tenant_c"]
+        PG --> S1
+        PG --> S2
+        PG --> S3
+    end
+
+    subgraph ROW_SEG["Row-Level — RazoConnect"]
+        DB["PostgreSQL DB"]
+        TAB["Tabla productos\ntenant_id=1 | Razo\ntenant_id=2 | Fashion\ntenant_id=1 | Razo"]
+        DB --> TAB
+    end
+```
+
+---
+
+## Why Row-Level
+
+RazoConnect implements Row-Level Isolation because the operational ROI is exponential. A new feature deployed once appears in all tenants automatically. A single database migration updates the entire platform. A single server covers the operation of all businesses. The disadvantages (query discipline, risk of forgetting the filter) are managed with additional middleware layers, not with additional infrastructure.
+
+---
+
+## Tenant Detection by Domain
+
+The first entry point to the system is `tenantGuard`. This middleware extracts the hostname from the HTTP request, normalizes it (removes the `www.` prefix), and looks it up in the `tenants` table.
+
+```mermaid
+sequenceDiagram
+    participant C as Cliente
+    participant TG as tenantGuard
+    participant DB as PostgreSQL
+    participant App as Aplicacion
+
+    C->>TG: GET razo.com.mx/productos
+    TG->>TG: Normalizar hostname (quitar www.)
+    TG->>DB: SELECT * FROM tenants WHERE dominio = 'razo.com.mx'
+    DB-->>TG: { tenant_id: 1, nombre: "Razo", is_active: true }
+    TG->>App: req.tenant = { tenant_id: 1, ... }
+    App-->>C: Respuesta con datos del tenant 1
+```
+
+If the domain does not exist in the table or the tenant has `is_active = false`, the request is rejected before reaching any controller. The `req.tenant` object is available to all middlewares and handlers that execute after.
+
+---
+
+## The Four Isolation Layers
+
+RazoConnect does not rely on a single validation layer. Four independent mechanisms protect isolation, so that if one were to fail, the others contain it.
+
+```mermaid
+flowchart TD
+    P1["1. tenantGuard\nDetecta tenant por dominio"]
+    P2["2. authMiddleware\nValida JWT contra BD"]
+    P3["3. tenantSessionGuard\nCompara tenant_id del token vs tenant detectado"]
+    P4["4. Row-Level en BD\nWHERE tenant_id = $1 en cada query"]
+
+    P1 --> P2 --> P3 --> P4
+```
+
+**Layer 1 — tenantGuard:** Detects the tenant from the HTTP domain. Without this layer, the system does not know who the request belongs to.
+
+**Layer 2 — authMiddleware:** Verifies the JWT against the database. An expired, revoked, or malformed token is rejected before reaching business logic.
+
+**Layer 3 — tenantSessionGuard:** Compares the `tenant_id` encoded in the JWT token against the `tenant_id` detected by the domain. If they don't match, the session is actively destroyed.
+
+**Layer 4 — Row-Level Security:** Every database query includes `WHERE tenant_id = $1`. Even if the three previous layers were to fail, the database only returns rows for the correct tenant.
+
+---
+
+## Session Destruction on Mismatch
+
+When the `tenant_id` in the token does not match the `tenant_id` detected by domain, the system does not simply return an error. It actively destroys all session artifacts to prevent a compromised session from being reused.
+
+```mermaid
+flowchart TD
+    Check["tenant_id en token != tenant_id detectado por dominio"] --> D1["delete req.user"]
+    D1 --> D2["req.logout() Passport"]
+    D2 --> D3["req.session.destroy()"]
+    D3 --> D4["res.clearCookie() para todas las cookies"]
+    D4 --> D5["delete req.headers.authorization"]
+    D5 --> API{"Es API request?"}
+    API -->|Si| R401["HTTP 401 JSON"]
+    API -->|No| Redirect["Redirect a /login con mensaje de error"]
+```
+
+This behavior guarantees that a cookie stolen from one tenant cannot be used in another tenant, not even transiently.
+
+---
+
+## Attack Scenarios and Mitigation
+
+| Scenario | Layer that stops it | Mechanism |
+|---|---|---|
+| Stolen cookie used in another tenant | Layer 3 — tenantSessionGuard | token tenant_id != domain tenant_id, session destroyed |
+| JWT token reused in another domain | Layer 3 — tenantSessionGuard | Same comparison mechanism |
+| Direct access to PostgreSQL with compromised credentials | Layer 4 — Row-Level | WHERE tenant_id filters the data |
+| SQL Injection attempting to escape the filter | Layer 4 + inputValidator | Parameterized queries + input sanitization |
+| Non-existent domain or inactive tenant | Layer 1 — tenantGuard | Request rejected before reaching auth |
+
+---
+
+Developed by Fernando Ramírez | <a href="https://xcore-byg8fkdve4eyatbz.mexicocentral-01.azurewebsites.net/">xCore</a>
+
+</details>

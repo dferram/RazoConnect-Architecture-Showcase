@@ -1,4 +1,7 @@
-# Capas de Seguridad en RazoConnect
+# Capas de Seguridad en RazoConnect / Security Layers in RazoConnect
+
+<details open>
+<summary>🇲🇽 Español</summary>
 
 RazoConnect implementa seguridad en profundidad: diez mecanismos independientes que protegen la aplicacion en distintos niveles. Ninguno depende de que el anterior sea perfecto. Todos estan escritos a mano siguiendo OWASP Top 10, sin depender de paquetes de terceros como helmet.
 
@@ -185,3 +188,196 @@ Despues de esta secuencia, la peticion devuelve 401 (API) o redirige a `/login` 
 ---
 
 Desarrollado por Fernando Ramírez | <a href="https://xcore-byg8fkdve4eyatbz.mexicocentral-01.azurewebsites.net/">xCore</a>
+
+</details>
+
+<details>
+<summary>🇺🇸 English</summary>
+
+RazoConnect implements defense in depth: ten independent mechanisms that protect the application at different levels. None depends on the previous one being perfect. All are written by hand following OWASP Top 10, without relying on third-party packages like helmet.
+
+---
+
+## Table of Contents
+
+- [Security Flow](#security-flow)
+- [Layer 1 — securityHeaders](#layer-1--securityheaders)
+- [Layer 2 — rateLimiter](#layer-2--ratelimiter)
+- [Layer 3 — inputValidator](#layer-3--inputvalidator)
+- [Layer 4 — tenantGuard](#layer-4--tenantguard)
+- [Layer 5 — authMiddleware](#layer-5--authmiddleware)
+- [Layer 6 — tenantSessionGuard](#layer-6--tenantsessionguard)
+- [Layer 7 — validateUserTenant](#layer-7--validateusertenant)
+- [Layer 8 — Row-Level Security in DB](#layer-8--row-level-security-in-db)
+- [Layer 9 — secretsValidator](#layer-9--secretsvalidator)
+- [Layer 10 — checkCreditAccess and checkCreditStatus](#layer-10--checkcreditaccess-and-checkcreditstatus)
+- [Session Destruction on Mismatch](#session-destruction-on-mismatch)
+- [Threat Matrix](#threat-matrix)
+
+---
+
+## Security Flow
+
+Every HTTP request traverses the layers in order. A request that fails at any point is rejected without continuing.
+
+```mermaid
+flowchart TD
+    Request["HTTP Request"] --> SH["1. securityHeaders\nCSP, HSTS, X-Frame-Options"]
+    SH --> RL["2. rateLimiter\nMax 100 req / 15min por IP"]
+    RL --> IV["3. inputValidator\nSanitizar inputs, prevenir XSS/Injection"]
+    IV --> TG["4. tenantGuard\nDetectar tenant por dominio"]
+    TG --> Auth["5. authMiddleware\nVerificar JWT contra BD"]
+    Auth --> TSG["6. tenantSessionGuard\nVerificar tenant_id en token === tenant detectado"]
+    TSG --> Route["7. Route Handler"]
+    Route --> DB["8. PostgreSQL\nWHERE tenant_id = $1 en cada query"]
+```
+
+---
+
+## Layer 1 — securityHeaders
+
+The `securityHeaders` middleware attaches HTTP security headers to every response. It is implemented by hand, without helmet, to guarantee exact understanding of what each header does.
+
+| Header | Value | Purpose |
+|---|---|---|
+| Content-Security-Policy | Restrictive directives by resource type | Prevents XSS by restricting origins for scripts, styles, and iframes |
+| Strict-Transport-Security | max-age=31536000; includeSubDomains | Forces HTTPS for a full year |
+| X-Frame-Options | DENY | Prevents clickjacking by prohibiting embedding the app in iframes |
+| X-XSS-Protection | 1; mode=block | Activates the browser XSS filter (compatibility) |
+| X-Content-Type-Options | nosniff | Prevents MIME sniffing |
+| Referrer-Policy | strict-origin-when-cross-origin | Controls what information is sent in the Referer header |
+
+---
+
+## Layer 2 — rateLimiter
+
+The rate limiter is implemented without external dependencies. It uses an in-memory Map with automatic cleanup to track the number of requests per IP within a time window.
+
+Key characteristics:
+- Maximum 100 requests per IP every 15 minutes on general routes
+- Stricter limits on authentication routes
+- Automatic cleanup of expired entries to avoid memory leaks
+- Responds with headers `X-RateLimit-Limit`, `X-RateLimit-Remaining` and `X-RateLimit-Reset`
+- Does not depend on Redis or any external service
+
+---
+
+## Layer 3 — inputValidator
+
+The input validator recursively sanitizes all body, query, and params fields before they reach any controller.
+
+Operations performed:
+- Recursive sanitization of nested objects
+- Prevention of prototype pollution (blocks keys like `__proto__`, `constructor`, `prototype`)
+- Removal of null bytes (`\0`) that can bypass downstream validations
+- Escaping HTML characters to prevent reflected XSS
+- Rejection of inputs exceeding configurable length limits
+
+---
+
+## Layer 4 — tenantGuard
+
+Detects the tenant of the request from the HTTP hostname. Normalizes the domain (removes `www.`), looks it up in the `tenants` table, and attaches it to `req.tenant`. If the domain doesn't exist or the tenant is inactive, the request is rejected with error 404 before reaching auth.
+
+---
+
+## Layer 5 — authMiddleware
+
+Verifies the JWT attached to the request. The verification includes:
+- Cryptographic signature of the token
+- Expiration date
+- Existence of the user in the database (the token is not purely stateless: it is validated against the DB to detect revoked users)
+- User role in the context of the tenant
+
+---
+
+## Layer 6 — tenantSessionGuard
+
+Compares the `tenant_id` embedded in the JWT against the `tenant_id` detected by the domain in layer 4. If they don't match, it executes a complete session destruction sequence.
+
+```mermaid
+flowchart TD
+    Check["tenant_id en token != tenant_id detectado por dominio"] --> D1["delete req.user"]
+    D1 --> D2["req.logout() Passport"]
+    D2 --> D3["req.session.destroy()"]
+    D3 --> D4["res.clearCookie() para todas las cookies"]
+    D4 --> D5["delete req.headers.authorization"]
+    D5 --> API{"Es API request?"}
+    API -->|Si| R401["HTTP 401 JSON"]
+    API -->|No| Redirect["Redirect a /login con mensaje de error"]
+```
+
+---
+
+## Layer 7 — validateUserTenant
+
+Additional middleware that verifies `user.tenant_id === request.tenant_id` at the handler level. It is a second verification, independent of tenantSessionGuard, applied to routes that operate on tenant resources.
+
+---
+
+## Layer 8 — Row-Level Security in DB
+
+Every database query includes `WHERE tenant_id = $1` as a parameter. This is the last line of defense: even if all previous layers were compromised, the database only returns rows for the correct tenant.
+
+The pattern is applied without exception in all tables containing business data: productos, clientes, pedidos, inventario, creditos, notificaciones, and audit_log.
+
+---
+
+## Layer 9 — secretsValidator
+
+On application startup, `runSecurityAudit` runs an environment variable audit before the server accepts requests:
+
+- Verifies that all critical environment variables are defined (JWT_SECRET, DATABASE_URL, CLOUDINARY_*, MERCADOPAGO_*, etc.)
+- Validates that secrets have sufficient entropy (configurable minimum length)
+- If any validation fails, the process terminates with a descriptive message before opening the port
+
+This prevents accidental starts with incomplete configuration or weak secrets.
+
+---
+
+## Layer 10 — checkCreditAccess and checkCreditStatus
+
+Specialized middlewares applied before confirming orders with credit payment:
+
+**checkCreditAccess:** Verifies that the client has an active credit line and that the tenant has the credit module enabled.
+
+**checkCreditStatus:** Verifies the current credit status of the client (ACTIVO, SUSPENDIDO, CANCELADO), the available limit, and the absence of overdue debts. If the client has overdue debt or the credit is suspended, the order is rejected before processing.
+
+---
+
+## Session Destruction on Mismatch
+
+The session destruction in layer 6 is not a simple `return res.status(401)`. It is a cleanup sequence that removes all authentication artifacts from the request and the server session:
+
+1. `delete req.user` — removes the user object from the request
+2. `req.logout()` — notifies Passport that the session ended
+3. `req.session.destroy()` — destroys the session in the server store
+4. `res.clearCookie()` — removes all session and JWT cookies
+5. `delete req.headers.authorization` — removes the authorization header
+
+After this sequence, the request returns 401 (API) or redirects to `/login` (web).
+
+---
+
+## Threat Matrix
+
+| Threat | Layers that mitigate it |
+|---|---|
+| Reflected or stored XSS | securityHeaders (CSP), inputValidator |
+| Clickjacking | securityHeaders (X-Frame-Options) |
+| Login brute force | rateLimiter |
+| Prototype pollution | inputValidator |
+| Null byte injection | inputValidator |
+| Cookie stolen in another tenant | tenantSessionGuard |
+| JWT reused in another tenant | tenantSessionGuard |
+| Revoked user token | authMiddleware (validates against DB) |
+| SQL access to another tenant's data | Row-Level Security in DB |
+| Startup with weak secrets | secretsValidator |
+| Order with suspended credit | checkCreditStatus |
+| MITM / plaintext HTTP | securityHeaders (HSTS) |
+
+---
+
+Developed by Fernando Ramírez | <a href="https://xcore-byg8fkdve4eyatbz.mexicocentral-01.azurewebsites.net/">xCore</a>
+
+</details>
