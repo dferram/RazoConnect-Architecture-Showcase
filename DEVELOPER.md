@@ -17,9 +17,9 @@
 
 ## Quien es Fernando Ramírez
 
-Fernando es un desarrollador de software fullstack con especializacion en backend, sistemas empresariales y arquitecturas multi-tenant. Es el fundador de <a href="https://xcore-byg8fkdve4eyatbz.mexicocentral-01.azurewebsites.net/">xCore</a>, empresa de desarrollo de software enfocada en soluciones backend-heavy para el mercado mexicano y latinoamericano.
+Soy un desarrollador de software fullstack con especializacion en backend, sistemas empresariales y arquitecturas multi-tenant. Soy el fundador de <a href="https://xcore-byg8fkdve4eyatbz.mexicocentral-01.azurewebsites.net/">xCore</a>, empresa de desarrollo de software enfocada en soluciones backend-heavy para el mercado mexicano y latinoamericano.
 
-Su enfoque no se limita a escribir codigo que funcione. Cada decision en sus proyectos considera seguridad, escalabilidad operativa y facilidad de mantenimiento a largo plazo. RazoConnect es el ejemplo mas completo de ese enfoque: un sistema en produccion con inventario inteligente, credito con scoring automatico, auditoria forense inmutable y diez capas de seguridad implementadas sin depender de paquetes de terceros.
+Mi enfoque no se limita a escribir codigo que funcione. Cada decision en mis proyectos considera seguridad, escalabilidad operativa y facilidad de mantenimiento a largo plazo. RazoConnect es el ejemplo mas completo de ese enfoque: un sistema en produccion con inventario inteligente, credito con scoring automatico, auditoria forense inmutable y diez capas de seguridad implementadas sin depender de paquetes de terceros.
 
 GitHub: [github.com/dferram](https://github.com/dferram)
 
@@ -46,7 +46,7 @@ GitHub: [github.com/dferram](https://github.com/dferram)
 
 ## Filosofia de Desarrollo
 
-Fernando no escribe codigo para que compile, lo escribe para que dure. Cada decision en RazoConnect tiene una razon: el rate limiter se implemento sin dependencias externas porque una dependencia menos es un vector de ataque menos. Las cabeceras de seguridad se escribieron a mano porque entender lo que hace cada una es mas importante que instalar un paquete. La arquitectura multi-tenant se eligio como Row-Level en lugar de bases de datos separadas porque el ROI operacional es exponencial a escala.
+No escribo codigo para que compile, lo escribo para que dure. Cada decision en RazoConnect tiene una razon: el rate limiter se implemento sin dependencias externas porque una dependencia menos es un vector de ataque menos. Las cabeceras de seguridad se escribieron a mano porque entender lo que hace cada una es mas importante que instalar un paquete. La arquitectura multi-tenant se eligio como Row-Level en lugar de bases de datos separadas porque el ROI operacional es exponencial a escala.
 
 La auditoria forense no fue un requerimiento regulatorio, fue una decision de diseno desde el dia uno. El Kardex de inventario y el diff tracking en el audit log no son features adicionales: son la garantia de que el sistema puede responder a cualquier pregunta sobre su historia con evidencia verificable.
 
@@ -56,9 +56,9 @@ La seguridad no se delega a un paquete. Se entiende, se implementa y se document
 
 ## xCore
 
-<a href="https://xcore-byg8fkdve4eyatbz.mexicocentral-01.azurewebsites.net/">xCore</a> es el estudio de desarrollo de software fundado por Fernando Ramírez. Se especializa en sistemas empresariales backend-heavy para el mercado mexicano y latinoamericano: plataformas de ventas, sistemas de inventario, integraciones de pago, y soluciones SaaS multi-tenant.
+<a href="https://xcore-byg8fkdve4eyatbz.mexicocentral-01.azurewebsites.net/">xCore</a> es mi estudio de desarrollo de software. Me especializo en sistemas empresariales backend-heavy para el mercado mexicano y latinoamericano: plataformas de ventas, sistemas de inventario, integraciones de pago, y soluciones SaaS multi-tenant.
 
-El enfoque de <a href="https://xcore-byg8fkdve4eyatbz.mexicocentral-01.azurewebsites.net/">xCore</a> es construir sistemas que los equipos que los heredan puedan entender, mantener y extender sin necesidad del autor original. Eso se logra con documentacion tecnica exhaustiva, arquitecturas predecibles y codigo que expresa intencion, no solo implementacion.
+Mi enfoque en <a href="https://xcore-byg8fkdve4eyatbz.mexicocentral-01.azurewebsites.net/">xCore</a> es construir sistemas que los equipos que los heredan puedan entender, mantener y extender sin necesidad del autor original. Eso se logra con documentacion tecnica exhaustiva, arquitecturas predecibles y codigo que expresa intencion, no solo implementacion.
 
 GitHub: [github.com/dferram](https://github.com/dferram)
 
@@ -124,9 +124,9 @@ Desarrollado por Fernando Ramírez | <a href="https://xcore-byg8fkdve4eyatbz.mex
 
 ## Who is Fernando Ramírez
 
-Fernando is a fullstack software developer specializing in backend, enterprise systems, and multi-tenant architectures. He is the founder of <a href="https://xcore-byg8fkdve4eyatbz.mexicocentral-01.azurewebsites.net/">xCore</a>, a software development company focused on backend-heavy solutions for the Mexican and Latin American market.
+I am a fullstack software developer specializing in backend, enterprise systems, and multi-tenant architectures. I am the founder of <a href="https://xcore-byg8fkdve4eyatbz.mexicocentral-01.azurewebsites.net/">xCore</a>, a software development company focused on backend-heavy solutions for the Mexican and Latin American market.
 
-His approach is not limited to writing code that works. Every decision in his projects considers security, operational scalability, and long-term maintainability. RazoConnect is the most complete example of that approach: a production system with smart inventory, credit with automatic scoring, immutable forensic audit, and ten security layers implemented without relying on third-party packages.
+My approach is not limited to writing code that works. Every decision in my projects considers security, operational scalability, and long-term maintainability. RazoConnect is the most complete example of that approach: a production system with smart inventory, credit with automatic scoring, immutable forensic audit, and ten security layers implemented without relying on third-party packages.
 
 GitHub: [github.com/dferram](https://github.com/dferram)
 
@@ -153,7 +153,7 @@ GitHub: [github.com/dferram](https://github.com/dferram)
 
 ## Development Philosophy
 
-Fernando doesn't write code for it to compile, he writes it to last. Every decision in RazoConnect has a reason: the rate limiter was implemented without external dependencies because one fewer dependency is one fewer attack vector. Security headers were written by hand because understanding what each one does is more important than installing a package. The multi-tenant architecture was chosen as Row-Level instead of separate databases because the operational ROI is exponential at scale.
+I don't write code for it to compile, I write it to last. Every decision in RazoConnect has a reason: the rate limiter was implemented without external dependencies because one fewer dependency is one fewer attack vector. Security headers were written by hand because understanding what each one does is more important than installing a package. The multi-tenant architecture was chosen as Row-Level instead of separate databases because the operational ROI is exponential at scale.
 
 Forensic auditing was not a regulatory requirement; it was a design decision from day one. The inventory Kardex and diff tracking in the audit log are not additional features: they are the guarantee that the system can answer any question about its history with verifiable evidence.
 
@@ -163,9 +163,9 @@ Security is not delegated to a package. It is understood, implemented, and docum
 
 ## xCore
 
-<a href="https://xcore-byg8fkdve4eyatbz.mexicocentral-01.azurewebsites.net/">xCore</a> is the software development studio founded by Fernando Ramírez. It specializes in backend-heavy enterprise systems for the Mexican and Latin American market: sales platforms, inventory systems, payment integrations, and multi-tenant SaaS solutions.
+<a href="https://xcore-byg8fkdve4eyatbz.mexicocentral-01.azurewebsites.net/">xCore</a> is my software development studio. I specialize in backend-heavy enterprise systems for the Mexican and Latin American market: sales platforms, inventory systems, payment integrations, and multi-tenant SaaS solutions.
 
-xCore's approach is to build systems that the teams who inherit them can understand, maintain, and extend without the original author. This is achieved through exhaustive technical documentation, predictable architectures, and code that expresses intent, not just implementation.
+My approach at <a href="https://xcore-byg8fkdve4eyatbz.mexicocentral-01.azurewebsites.net/">xCore</a> is to build systems that the teams who inherit them can understand, maintain, and extend without the original author. This is achieved through exhaustive technical documentation, predictable architectures, and code that expresses intent, not just implementation.
 
 GitHub: [github.com/dferram](https://github.com/dferram)
 
@@ -207,6 +207,13 @@ flowchart TD
         D2[ExcelJS]
     end
 ```
+
+---
+
+Developed by Fernando Ramírez | <a href="https://xcore-byg8fkdve4eyatbz.mexicocentral-01.azurewebsites.net/">xCore</a>
+
+</details>\n
+<details>\n<summary>🇺🇸 English</summary>\n\n---\n\n## Table of Contents\n\n- [Who is Fernando Ramírez](#who-is-fernando-ramírez)\n- [Skills Demonstrated in RazoConnect](#skills-demonstrated-in-razoconnect)\n- [Development Philosophy](#development-philosophy)\n- [xCore](#xcore-1)\n- [Knowledge Map](#knowledge-map)\n\n---\n\n## Who is Fernando Ramírez\n\nI am a fullstack software developer specializing in backend, enterprise systems, and multi-tenant architectures. I am the founder of <a href="https://xcore-byg8fkdve4eyatbz.mexicocentral-01.azurewebsites.net/">xCore</a>, a software development company focused on backend-heavy solutions for the Mexican and Latin American market.\n\nMy approach is not limited to writing code that works. Every decision in my projects considers security, operational scalability, and long-term maintainability. RazoConnect is the most complete example of that approach: a production system with smart inventory, credit with automatic scoring, immutable forensic audit, and ten security layers implemented without relying on third-party packages.\n\nGitHub: [github.com/dferram](https://github.com/dferram)\n\n---\n\n## Skills Demonstrated in RazoConnect\n\n| Skill | Evidence in the code |\n|---|---|\n| Multi-tenant architecture | Row-Level Isolation with 4 security layers, automatic tenant detection by HTTP domain |\n| OWASP Security | CSP, HSTS, rate limiting without dependencies, recursive input sanitization, secrets audit on startup, no helmet |\n| Database design | 20+ normalized tables, 20+ PL/pgSQL functions, 10+ synchronization triggers, pg_cron for daily maintenance |\n| Node.js / Express backend | 20+ modules, layered architecture (routes → controllers → services → DB), reusable middlewares |\n| Payment integration | MercadoPago SDK with webhook handling, payment state reconciliation, and order updates |\n| File management | Cloudinary + Sharp for image optimization (resize, compression) before uploading |\n| Communication | Nodemailer with Handlebars templates compiled at runtime for transactional emails |\n| Document generation | PDFKit for delivery receipts and invoices, ExcelJS for accounts receivable reports |\n| Complex business logic | Credit system with risk scoring, inventory FIFO with Priority Override, RMA, agent commissions |\n| Automation | node-cron + PL/pgSQL triggers + pg_cron + automatic purchase order generation for backorders |\n| OAuth | Google OAuth 2.0 with Passport.js integrated with the project's session and JWT system |\n| Audited change control | ChangeRequestService: critical changes are recorded as requests before being applied, with diff in JSONB |\n\n---\n\n## Development Philosophy\n\nI don't write code for it to compile, I write it to last. Every decision in RazoConnect has a reason: the rate limiter was implemented without external dependencies because one fewer dependency is one fewer attack vector. Security headers were written by hand because understanding what each one does is more important than installing a package. The multi-tenant architecture was chosen as Row-Level instead of separate databases because the operational ROI is exponential at scale.\n\nForensic auditing was not a regulatory requirement; it was a design decision from day one. The inventory Kardex and diff tracking in the audit log are not additional features: they are the guarantee that the system can answer any question about its history with verifiable evidence.\n\nSecurity is not delegated to a package. It is understood, implemented, and documented.\n\n---\n\n## xCore\n\n<a href="https://xcore-byg8fkdve4eyatbz.mexicocentral-01.azurewebsites.net/">xCore</a> is my software development studio. I specialize in backend-heavy enterprise systems for the Mexican and Latin American market: sales platforms, inventory systems, payment integrations, and multi-tenant SaaS solutions.\n\nMy approach at <a href="https://xcore-byg8fkdve4eyatbz.mexicocentral-01.azurewebsites.net/">xCore</a> is to build systems that the teams who inherit them can understand, maintain, and extend without the original author. This is achieved through exhaustive technical documentation, predictable architectures, and code that expresses intent, not just implementation.\n\nGitHub: [github.com/dferram](https://github.com/dferram)\n\n---\n\n## Knowledge Map\n\n```mermaid\nflowchart TD\n    subgraph Backend\n        B1[Node.js / Express]\n        B2[PostgreSQL / PL/pgSQL]\n        B3[REST API Design]\n        B4[JWT / OAuth / Sessions]\n    end\n\n    subgraph Seguridad\n        S1[OWASP Top 10]\n        S2[Multi-tenant isolation]\n        S3[Rate limiting]\n        S4[Input sanitization]\n    end\n\n    subgraph Integraciones\n        I1[MercadoPago]\n        I2[Cloudinary / Sharp]\n        I3[Nodemailer]\n        I4[Google OAuth]\n    end\n\n    subgraph Automatizacion\n        A1[node-cron]\n        A2[Triggers PL/pgSQL]\n        A3[pg_cron]\n    end\n\n    subgraph Documentos\n        D1[PDFKit]\n        D2[ExcelJS]\n    end\n```
 
 ---
 
