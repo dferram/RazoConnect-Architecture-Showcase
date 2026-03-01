@@ -3,7 +3,7 @@
 <details open>
 <summary>🇲🇽 Español</summary>
 
-RazoConnect migro de tokens de larga duracion (365d para admin, 30d para usuarios) a una arquitectura dual de tokens: **access tokens de corta duracion** (1 hora) y **refresh tokens de larga duracion** (30 dias) almacenados en **Azure Cache for Redis**. Esta migracion reduce la superficie de ataque sin sacrificar la experiencia del usuario mediante el silent refresh automatico implementado en el frontend.
+RazoConnect migro de tokens de larga duración (365d para admin, 30d para usuarios) a una arquitectura dual de tokens: **access tokens de corta duración** (1 hora) y **refresh tokens de larga duración** (30 dias) almacenados en **Azure Cache for Redis**. Esta migración reduce la superficie de ataque sin sacrificar la experiencia del usuario mediante el silent refresh automático implementado en el frontend.
 
 ---
 
@@ -20,12 +20,12 @@ RazoConnect migro de tokens de larga duracion (365d para admin, 30d para usuario
 
 ## Arquitectura Dual de Tokens
 
-| Tipo | Duracion | Almacenamiento | Proposito |
+| Tipo | Duración | Almacenamiento | Propósito |
 |---|---|---|---|
 | Access Token | 1 hora | Solo en cliente (header Authorization) | Autoriza cada request HTTP |
 | Refresh Token | 30 dias | Azure Cache for Redis (server-side) | Renueva access tokens sin requerir login |
 
-La separacion elimina el compromiso entre seguridad y usabilidad: los access tokens de corta duracion minimizan el tiempo de exposicion ante robo, mientras que los refresh tokens almacenados en Redis permiten revocacion centralizada y experiencia continua.
+La separación elimina el compromiso entre seguridad y usabilidad: los access tokens de corta duración minimizan el tiempo de exposición ante robo, mientras que los refresh tokens almacenados en Redis permiten revocación centralizada y experiencia continua.
 
 ---
 
@@ -38,31 +38,31 @@ generateAccessToken({ id, rol, email, tenant_id })  →  JWT firmado, expira en 
 generateRefreshToken({ id, rol, email, tenant_id })  →  JWT firmado, expira en 30d + guardado en Redis
 ```
 
-**Normalizacion del payload:** La migracion elimino los campos legacy `userId`, `roles` y `codigoAgente` del payload. Todos los tokens ahora usan el esquema unificado `{ id, rol, email, tenant_id }`, lo que simplifica la validacion en todos los middlewares y elimina ambiguedad de nombres de campo.
+**Normalización del payload:** La migración elimino los campos legacy `userId`, `roles` y `codigoAgente` del payload. Todos los tokens ahora usan el esquema unificado `{ id, rol, email, tenant_id }`, lo que simplifica la validación en todos los middlewares y elimina ambiguedad de nombres de campo.
 
 ---
 
 ## authMiddleware.js
 
-`authMiddleware.js` extrae y valida los campos directamente del payload del access token usando la estructura normalizada:
+`authMiddleware.js` extrae y válida los campos directamente del payload del access token usando la estructura normalizada:
 
 - Extrae `id` y `rol` del payload (no `userId` ni `roles`)
-- Verifica la firma y la expiracion del access token
-- Valida la existencia del usuario en la base de datos
+- Verifica la firma y la expiración del access token
+- Válida la existencia del usuario en la base de datos
 - Si el access token expiro, retorna 401 para que el cliente ejecute el silent refresh
 
 ---
 
 ## Frontend — AuthManager
 
-El frontend detecta la presencia de `AuthManager` mediante el flag `useAuthManager` y ajusta el metodo de obtencion del token:
+El frontend detecta la presencia de `AuthManager` mediante el flag `useAuthManager` y ajusta el metodo de obtención del token:
 
-| Modo | Metodo de obtencion de token |
+| Modo | Metodo de obtención de token |
 |---|---|
-| `useAuthManager = true` | `getAccessToken()` con silent refresh automatico |
+| `useAuthManager = true` | `getAccessToken()` con silent refresh automático |
 | `useAuthManager = false` (legacy) | Lectura directa desde `localStorage` |
 
-**Silent refresh automatico:** Cuando `getAccessToken()` detecta que el access token ha expirado o esta proximo a expirar, llama automaticamente a `/api/auth/refresh` antes de retornar el token al codigo que lo solicito. El usuario no percibe interrupciones.
+**Silent refresh automático:** Cuando `getAccessToken()` detecta que el access token ha expirado o está próximo a expirar, llama automáticamente a `/api/auth/refresh` antes de retornar el token al código que lo solicito. El usuario no percibe interrupciones.
 
 ---
 
@@ -70,18 +70,18 @@ El frontend detecta la presencia de `AuthManager` mediante el flag `useAuthManag
 
 ```mermaid
 flowchart TD
-    Login["POST /api/auth/login\nCredenciales validas"] --> GenTokens["jwtHelper.js\ngenerateAccessToken + generateRefreshToken"]
+    Login["POST /api/auth/login\nCredenciales válidas"] --> GenTokens["jwtHelper.js\ngenerateAccessToken + generateRefreshToken"]
     GenTokens --> AccessToken["Access Token (1h)\nEnviado al cliente"]
     GenTokens --> RefreshToken["Refresh Token (30d)\nGuardado en Redis"]
     AccessToken --> Request["Request autenticado\nAuthorization: Bearer access_token"]
-    Request --> Validate["authMiddleware.js\nValida firma y expiracion"]
-    Validate -->|Token valido| Response["Respuesta exitosa"]
+    Request --> Validate["authMiddleware.js\nVálida firma y expiración"]
+    Validate -->|Token válido| Response["Respuesta exitosa"]
     Validate -->|Token expirado| Expired["HTTP 401 — Token expirado"]
-    Expired --> AuthMgr["AuthManager.getAccessToken()\nDetecta expiracion"]
+    Expired --> AuthMgr["AuthManager.getAccessToken()\nDetecta expiración"]
     AuthMgr --> Refresh["POST /api/auth/refresh\nEnvia refresh token"]
-    Refresh --> Redis["Azure Cache for Redis\nValida refresh token"]
-    Redis -->|Token valido| NewAccess["Nuevo Access Token (1h)"]
-    Redis -->|Token invalido o expirado| ForceLogout["Logout forzado\nSesion terminada"]
+    Refresh --> Redis["Azure Cache for Redis\nVálida refresh token"]
+    Redis -->|Token válido| NewAccess["Nuevo Access Token (1h)"]
+    Redis -->|Token inválido o expirado| ForceLogout["Logout forzado\nSesión terminada"]
     NewAccess --> Request
 ```
 
@@ -89,11 +89,11 @@ flowchart TD
 
 ## Ventajas de Seguridad
 
-| Aspecto | Tokens de larga duracion (antes) | Arquitectura dual (ahora) |
+| Aspecto | Tokens de larga duración (antes) | Arquitectura dual (ahora) |
 |---|---|---|
-| Ventana de exposicion ante robo | 365 dias | 1 hora |
-| Revocacion | No posible sin BD adicional | Inmediata en Redis |
-| Superficie de ataque | Alta (token valido por anos) | Reducida (token expira en 1h) |
+| Ventana de exposición ante robo | 365 dias | 1 hora |
+| Revocación | No posible sin BD adicional | Inmediata en Redis |
+| Superficie de ataque | Alta (token válido por anos) | Reducida (token expira en 1h) |
 | Experiencia de usuario | Sin interrupciones | Sin interrupciones (silent refresh) |
 | Escalabilidad en multi-instancia | Sin estado compartido | Redis centraliza el estado |
 

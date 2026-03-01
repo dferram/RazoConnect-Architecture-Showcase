@@ -3,13 +3,13 @@
 <details open>
 <summary>🇲🇽 Español</summary>
 
-RazoConnect implementa un patron de control de cambios donde las modificaciones criticas no se aplican directamente a la base de datos. En su lugar, se registran primero como solicitudes de cambio con un diff del estado anterior y el estado propuesto, y solo se persisten despues de una confirmacion explicita.
+RazoConnect implementa un patrón de control de cambios donde las modificaciones críticas no se aplican directamente a la base de datos. En su lugar, se registran primero como solicitudes de cambio con un diff del estado anterior y el estado propuesto, y solo se persisten despues de una confirmación explicita.
 
 ---
 
 ## Tabla de Contenidos
 
-- [Por Que Existe Este Patron](#por-que-existe-este-patron)
+- [Por Que Existe Este Patrón](#por-que-existe-este-patrón)
 - [Flujo General](#flujo-general)
 - [Estructura de la Tabla change_requests](#estructura-de-la-tabla-change_requests)
 - [Propiedades del Sistema](#propiedades-del-sistema)
@@ -17,9 +17,9 @@ RazoConnect implementa un patron de control de cambios donde las modificaciones 
 
 ---
 
-## Por Que Existe Este Patron
+## Por Que Existe Este Patrón
 
-Las operaciones criticas de negocio — ajustar el limite de credito de un cliente, cambiar el precio de un producto, modificar el esquema de comision de un agente — tienen consecuencias financieras directas. Un error de escritura o una accion accidental no deberia ser irreversible. El ChangeRequestService crea un punto de confirmacion obligatorio antes de que cualquier cambio de este tipo se aplique.
+Las operaciones críticas de negocio — ajustar el limite de crédito de un cliente, cambiar el precio de un producto, modificar el esquema de comision de un agente — tienen consecuencias financieras directas. Un error de escritura o una acción accidental no deberia ser irreversible. El ChangeRequestService crea un punto de confirmación obligatorio antes de que cualquier cambio de este tipo se aplique.
 
 ---
 
@@ -62,14 +62,14 @@ CREATE TABLE change_requests (
 
 - Los diffs solo almacenan los campos que cambian, no el objeto completo
 - Un change_request PENDIENTE puede ser rechazado sin efecto en datos
-- Cada aplicacion genera automaticamente un registro en audit_log con referencia al change_request_id
+- Cada aplicación genera automáticamente un registro en audit_log con referencia al change_request_id
 - Los change_requests son inmutables una vez aplicados o rechazados
 
 ---
 
 ## Casos de Uso
 
-- Modificacion de limite de credito de cliente
+- Modificación de limite de crédito de cliente
 - Cambio de precio de producto activo con pedidos pendientes
 - Ajuste de esquema de comision de agente con comisiones en curso
 

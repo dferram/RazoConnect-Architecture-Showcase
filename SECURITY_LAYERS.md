@@ -3,7 +3,7 @@
 <details open>
 <summary>🇲🇽 Español</summary>
 
-RazoConnect implementa seguridad en profundidad: diez mecanismos independientes que protegen la aplicacion en distintos niveles. Ninguno depende de que el anterior sea perfecto. Todos estan escritos a mano siguiendo OWASP Top 10, sin depender de paquetes de terceros como helmet.
+RazoConnect implementa seguridad en profundidad: diez mecanismos independientes que protegen la aplicación en distintos niveles. Ninguno depende de que el anterior sea perfecto. Todos están escritos a mano siguiendo OWASP Top 10, sin depender de paquetes de terceros como helmet.
 
 ---
 
@@ -20,14 +20,14 @@ RazoConnect implementa seguridad en profundidad: diez mecanismos independientes 
 - [Capa 8 — Row-Level Security en BD](#capa-8--row-level-security-en-bd)
 - [Capa 9 — secretsValidator](#capa-9--secretsvalidator)
 - [Capa 10 — checkCreditAccess y checkCreditStatus](#capa-10--checkcreditaccess-y-checkcreditstatus)
-- [Destruccion de Sesion ante Mismatch](#destruccion-de-sesion-ante-mismatch)
+- [Destrucción de Sesión ante Mismatch](#destrucción-de-sesión-ante-mismatch)
 - [Matriz de Amenazas](#matriz-de-amenazas)
 
 ---
 
 ## Flujo de Seguridad
 
-Cada peticion HTTP atraviesa las capas en orden. Una peticion que falla en cualquier punto es rechazada sin continuar.
+Cada petición HTTP atraviesa las capas en orden. Una petición que falla en cualquier punto es rechazada sin continuar.
 
 ```mermaid
 flowchart TD
@@ -45,28 +45,28 @@ flowchart TD
 
 ## Capa 1 — securityHeaders
 
-El middleware `securityHeaders` adjunta cabeceras de seguridad HTTP a cada respuesta. Esta implementado a mano, sin helmet, para garantizar comprension exacta de lo que hace cada cabecera.
+El middleware `securityHeaders` adjunta cabeceras de seguridad HTTP a cada respuesta. Está implementado a mano, sin helmet, para garantizar comprensión exacta de lo que hace cada cabecera.
 
-| Cabecera | Valor | Proposito |
+| Cabecera | Valor | Propósito |
 |---|---|---|
 | Content-Security-Policy | Directivas restrictivas por tipo de recurso | Previene XSS al limitar origenes de scripts, estilos e iframes |
 | Strict-Transport-Security | max-age=31536000; includeSubDomains | Fuerza HTTPS durante un ano completo |
 | X-Frame-Options | DENY | Previene clickjacking al prohibir embeder la app en iframes |
 | X-XSS-Protection | 1; mode=block | Activa el filtro XSS del navegador (compatibilidad) |
 | X-Content-Type-Options | nosniff | Previene MIME sniffing |
-| Referrer-Policy | strict-origin-when-cross-origin | Controla que informacion se envia en el header Referer |
+| Referrer-Policy | strict-origin-when-cross-origin | Controla que información se envia en el header Referer |
 
 ---
 
 ## Capa 2 — rateLimiter
 
-El rate limiter utiliza `express-rate-limit` con `RedisStore` respaldado por **Azure Cache for Redis** (TLS obligatorio en puerto 6380). Al correr en Azure App Service con multiples instancias, un Map en memoria no garantiza el limite global; Redis centraliza el contador entre todas las instancias.
+El rate limiter utiliza `express-rate-limit` con `RedisStore` respaldado por **Azure Cache for Redis** (TLS obligatorio en puerto 6380). Al correr en Azure App Service con múltiples instancias, un Map en memoria no garantiza el limite global; Redis centraliza el contador entre todas las instancias.
 
 Caracteristicas clave:
 - **globalLimiter**: 300 peticiones por IP cada 15 minutos en todas las rutas `/api`
 - **authLimiter**: 10 intentos por IP cada 15 minutos en rutas de login de admin, con `skipSuccessfulRequests: true`
 - Limite aplicado globalmente en todas las instancias del App Service
-- Revocacion inmediata posible vaciando la clave en Redis
+- Revocación inmediata posible vaciando la clave en Redis
 
 Ver [RATE_LIMITING.md](RATE_LIMITING.md) para la arquitectura detallada.
 
@@ -77,9 +77,9 @@ Ver [RATE_LIMITING.md](RATE_LIMITING.md) para la arquitectura detallada.
 El validador de inputs sanitiza recursivamente todos los campos del body, query y params antes de que lleguen a cualquier controlador.
 
 Operaciones que realiza:
-- Sanitizacion recursiva de objetos anidados
-- Prevencion de prototype pollution (bloquea claves como `__proto__`, `constructor`, `prototype`)
-- Eliminacion de null bytes (`\0`) que pueden evadir validaciones downstream
+- Sanitización recursiva de objetos anidados
+- Prevención de prototype pollution (bloquea claves como `__proto__`, `constructor`, `prototype`)
+- Eliminación de null bytes (`\0`) que pueden evadir validaciones downstream
 - Escape de caracteres HTML para prevenir XSS reflejado
 - Rechazo de inputs que superan limites de longitud configurables
 
@@ -87,19 +87,19 @@ Operaciones que realiza:
 
 ## Capa 4 — tenantGuard
 
-Detecta el tenant de la peticion a partir del hostname HTTP. Normaliza el dominio (elimina `www.`), lo busca en la tabla `tenants` y lo adjunta a `req.tenant`. Si el dominio no existe o el tenant esta inactivo, la peticion es rechazada con error 404 antes de llegar a auth.
+Detecta el tenant de la petición a partir del hostname HTTP. Normaliza el dominio (elimina `www.`), lo busca en la tabla `tenants` y lo adjunta a `req.tenant`. Si el dominio no existe o el tenant está inactivo, la petición es rechazada con error 404 antes de llegar a auth.
 
 ---
 
 ## Capa 5 — authMiddleware
 
-Verifica el JWT adjunto a la peticion. La verificacion incluye:
-- Firma criptografica del token
-- Fecha de expiracion
-- Existencia del usuario en la base de datos (el token no es puramente stateless: se valida contra BD para detectar usuarios revocados)
-- Extraccion de `id` y `rol` del payload normalizado `{ id, rol, email, tenant_id }`
+Verifica el JWT adjunto a la petición. La verificación incluye:
+- Firma criptográfica del token
+- Fecha de expiración
+- Existencia del usuario en la base de datos (el token no es puramente stateless: se válida contra BD para detectar usuarios revocados)
+- Extracción de `id` y `rol` del payload normalizado `{ id, rol, email, tenant_id }`
 
-Los access tokens tienen duracion de 1 hora. Cuando expiran, el cliente ejecuta el silent refresh via `/api/auth/refresh` para obtener un nuevo access token sin interrumpir la sesion. Los refresh tokens (30 dias) se almacenan en Azure Cache for Redis para permitir revocacion centralizada.
+Los access tokens tienen duración de 1 hora. Cuando expiran, el cliente ejecuta el silent refresh via `/api/auth/refresh` para obtener un nuevo access token sin interrumpir la sesión. Los refresh tokens (30 dias) se almacenan en Azure Cache for Redis para permitir revocación centralizada.
 
 Ver [REFRESH_TOKENS.md](REFRESH_TOKENS.md) para la arquitectura de tokens duales.
 
@@ -107,7 +107,7 @@ Ver [REFRESH_TOKENS.md](REFRESH_TOKENS.md) para la arquitectura de tokens duales
 
 ## Capa 6 — tenantSessionGuard
 
-Compara el `tenant_id` embebido en el JWT contra el `tenant_id` detectado por el dominio en la capa 4. Si no coinciden, ejecuta una secuencia de destruccion completa de la sesion.
+Compara el `tenant_id` embebido en el JWT contra el `tenant_id` detectado por el dominio en la capa 4. Si no coinciden, ejecuta una secuencia de destrucción completa de la sesión.
 
 ```mermaid
 flowchart TD
@@ -125,51 +125,51 @@ flowchart TD
 
 ## Capa 7 — validateUserTenant
 
-Middleware adicional que verifica que `user.tenant_id === request.tenant_id` en el nivel de handler. Es una segunda verificacion, independiente de tenantSessionGuard, aplicada en rutas que operan sobre recursos del tenant.
+Middleware adicional que verifica que `user.tenant_id === request.tenant_id` en el nivel de handler. Es una segunda verificación, independiente de tenantSessionGuard, aplicada en rutas que operan sobre recursos del tenant.
 
 ---
 
 ## Capa 8 — Row-Level Security en BD
 
-Cada query de base de datos incluye `WHERE tenant_id = $1` como parametro. Esta es la ultima linea de defensa: incluso si todas las capas anteriores fueran comprometidas, la base de datos solo retorna filas del tenant correcto.
+Cada query de base de datos incluye `WHERE tenant_id = $1` como parámetro. Esta es la última linea de defensa: incluso si todas las capas anteriores fueran comprometidas, la base de datos solo retorna filas del tenant correcto.
 
-El patron se aplica sin excepciones en todas las tablas que contienen datos de negocio: productos, clientes, pedidos, inventario, creditos, notificaciones y audit_log.
+El patrón se aplica sin excepciones en todas las tablas que contienen datos de negocio: productos, clientes, pedidos, inventario, créditos, notificaciones y audit_log.
 
 ---
 
 ## Capa 9 — secretsValidator
 
-Al arrancar la aplicacion, `runSecurityAudit` ejecuta una auditoria de variables de entorno antes de que el servidor acepte peticiones:
+Al arrancar la aplicación, `runSecurityAudit` ejecuta una auditoría de variables de entorno antes de que el servidor acepte peticiones:
 
-- Verifica que todas las variables de entorno criticas esten definidas (JWT_SECRET, DATABASE_URL, CLOUDINARY_*, MERCADOPAGO_*, etc.)
-- Valida que los secretos tengan suficiente entropia (longitud minima configurable)
-- Si alguna validacion falla, el proceso termina con un mensaje descriptivo antes de abrir el puerto
+- Verifica que todas las variables de entorno críticas esten definidas (JWT_SECRET, DATABASE_URL, CLOUDINARY_*, MERCADOPAGO_*, etc.)
+- Válida que los secretos tengan suficiente entropia (longitud mínima configurable)
+- Si alguna validación falla, el proceso termina con un mensaje descriptivo antes de abrir el puerto
 
-Esto previene arranques accidentales con configuracion incompleta o secretos debiles.
+Esto previene arranques accidentales con configuración incompleta o secretos debiles.
 
 ---
 
 ## Capa 10 — checkCreditAccess y checkCreditStatus
 
-Middlewares especializados que se aplican antes de confirmar pedidos con pago a credito:
+Middlewares especializados que se aplican antes de confirmar pedidos con pago a crédito:
 
-**checkCreditAccess:** Verifica que el cliente tiene una linea de credito activa y que el tenant tiene habilitado el modulo de credito.
+**checkCreditAccess:** Verifica que el cliente tiene una linea de crédito activa y que el tenant tiene habilitado el módulo de crédito.
 
-**checkCreditStatus:** Verifica el estado actual del credito del cliente (ACTIVO, SUSPENDIDO, CANCELADO), el limite disponible y la ausencia de deudas vencidas. Si el cliente tiene deuda vencida o el credito esta suspendido, el pedido es rechazado antes de procesarse.
+**checkCreditStatus:** Verifica el estado actual del crédito del cliente (ACTIVO, SUSPENDIDO, CANCELADO), el limite disponible y la ausencia de deudas vencidas. Si el cliente tiene deuda vencida o el crédito está suspendido, el pedido es rechazado antes de procesarse.
 
 ---
 
-## Destruccion de Sesion ante Mismatch
+## Destrucción de Sesión ante Mismatch
 
-La destruccion de sesion en la capa 6 no es un simple `return res.status(401)`. Es una secuencia de limpieza que elimina todos los artefactos de autenticacion de la peticion y de la sesion del servidor:
+La destrucción de sesión en la capa 6 no es un simple `return res.status(401)`. Es una secuencia de limpieza que elimina todos los artefactos de autenticación de la petición y de la sesión del servidor:
 
-1. `delete req.user` — elimina el objeto de usuario de la peticion
-2. `req.logout()` — notifica a Passport que la sesion termino
-3. `req.session.destroy()` — destruye la sesion en el store del servidor
-4. `res.clearCookie()` — elimina todas las cookies de sesion y JWT
-5. `delete req.headers.authorization` — elimina el header de autorizacion
+1. `delete req.user` — elimina el objeto de usuario de la petición
+2. `req.logout()` — notifica a Passport que la sesión termino
+3. `req.session.destroy()` — destruye la sesión en el store del servidor
+4. `res.clearCookie()` — elimina todas las cookies de sesión y JWT
+5. `delete req.headers.authorization` — elimina el header de autorización
 
-Despues de esta secuencia, la peticion devuelve 401 (API) o redirige a `/login` (web).
+Despues de esta secuencia, la petición devuelve 401 (API) o redirige a `/login` (web).
 
 ---
 
@@ -184,13 +184,13 @@ Despues de esta secuencia, la peticion devuelve 401 (API) o redirige a `/login` 
 | Null byte injection | inputValidator |
 | Cookie robada en otro tenant | tenantSessionGuard |
 | JWT reutilizado en otro tenant | tenantSessionGuard |
-| Token de usuario revocado | authMiddleware (valida contra BD) |
-| Refresh token robado | Revocacion inmediata en Redis |
-| Access token de larga duracion comprometido | Arquitectura dual — access tokens de 1h (REFRESH_TOKENS.md) |
+| Token de usuario revocado | authMiddleware (válida contra BD) |
+| Refresh token robado | Revocación inmediata en Redis |
+| Access token de larga duración comprometido | Arquitectura dual — access tokens de 1h (REFRESH_TOKENS.md) |
 | Limite global eludido en multi-instancia | Rate limiting distribuido con Redis (RATE_LIMITING.md) |
 | Acceso a datos de otro tenant por SQL | Row-Level Security en BD |
 | Arranque con secretos debiles | secretsValidator |
-| Pedido con credito suspendido | checkCreditStatus |
+| Pedido con crédito suspendido | checkCreditStatus |
 | MITM / HTTP en texto plano | securityHeaders (HSTS) |
 
 ---

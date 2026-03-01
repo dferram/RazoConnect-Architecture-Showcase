@@ -3,37 +3,37 @@
 <details open>
 <summary>🇲🇽 Español</summary>
 
-RazoConnect utiliza Jest como framework de testing con cobertura de codigo configurada para controllers, middlewares y utils. Los tests validan la logica de negocio critica de forma aislada mediante mocks de base de datos, garantizando que cada capa pueda verificarse independientemente.
+RazoConnect utiliza Jest como framework de testing con cobertura de código configurada para controllers, middlewares y utils. Los tests validan la lógica de negocio crítica de forma aislada mediante mocks de base de datos, garantizando que cada capa pueda verificarse independientemente.
 
 ---
 
 ## Tabla de Contenidos
 
-- [Configuracion de Jest](#configuracion-de-jest)
+- [Configuración de Jest](#configuración-de-jest)
 - [Scripts de NPM](#scripts-de-npm)
-- [Flujo de Ejecucion](#flujo-de-ejecucion)
+- [Flujo de Ejecución](#flujo-de-ejecución)
 - [Que se Testea](#que-se-testea)
 
 ---
 
-## Configuracion de Jest
+## Configuración de Jest
 
-El archivo `jest.config.js` centraliza toda la configuracion del runner:
+El archivo `jest.config.js` centraliza toda la configuración del runner:
 
-| Opcion | Valor | Proposito |
+| Opción | Valor | Propósito |
 |---|---|---|
 | `testEnvironment` | `node` | Ejecuta los tests en entorno Node.js sin simular DOM |
 | `testMatch` | `**/tests/**/*.test.js` | Detecta archivos de test dentro de la carpeta `/tests/` |
 | `coverageDirectory` | `/coverage` | Directorio de salida para los reportes de cobertura |
-| `collectCoverageFrom` | `utils/**`, `middlewares/**`, `controllers/**` excluyendo `node_modules` | Define el alcance del analisis de cobertura |
-| `setupFilesAfterEnv` | `tests/setup.js` | Archivo de configuracion global ejecutado antes de cada suite |
+| `collectCoverageFrom` | `utils/**`, `middlewares/**`, `controllers/**` excluyendo `node_modules` | Define el alcance del análisis de cobertura |
+| `setupFilesAfterEnv` | `tests/setup.js` | Archivo de configuración global ejecutado antes de cada suite |
 | `testTimeout` | `10000` ms | Tiempo maximo de espera por test para operaciones async |
 
 ---
 
 ## Scripts de NPM
 
-Definidos en `package.json` para los tres modos de ejecucion:
+Definidos en `package.json` para los tres modos de ejecución:
 
 | Script | Comando | Uso |
 |---|---|---|
@@ -43,7 +43,7 @@ Definidos en `package.json` para los tres modos de ejecucion:
 
 ---
 
-## Flujo de Ejecucion
+## Flujo de Ejecución
 
 ```mermaid
 flowchart TD
@@ -63,28 +63,28 @@ flowchart TD
 
 ### Utils — Validators y Sanitizers
 
-Los tests de `utils/` cubren las funciones de validacion y sanitizacion de inputs:
+Los tests de `utils/` cubren las funciones de validación y sanitización de inputs:
 
-- Sanitizacion de strings con caracteres especiales y null bytes
-- Validacion de formatos: email, telefono, RUC/RFC
-- Prevencion de prototype pollution en objetos anidados
+- Sanitización de strings con caracteres especiales y null bytes
+- Validación de formatos: email, telefono, RUC/RFC
+- Prevención de prototype pollution en objetos anidados
 - Escape de caracteres HTML en campos de texto libre
 
 ### Middlewares
 
 Los tests de middleware verifican el comportamiento de cada capa de seguridad con escenarios positivos y negativos:
 
-- **tenantGuard**: resolucion correcta de tenant por hostname, rechazo de dominios inexistentes o tenants inactivos
-- **authMiddleware**: validacion de JWT con payload normalizado `{ id, rol, email, tenant_id }`, rechazo de tokens expirados o con firma invalida, extraccion correcta de `id` y `rol`
-- **rateLimiter**: aplicacion del limite configurado por IP, respuesta 429 al exceder el limite, reset de ventana de tiempo
+- **tenantGuard**: resolución correcta de tenant por hostname, rechazo de dominios inexistentes o tenants inactivos
+- **authMiddleware**: validación de JWT con payload normalizado `{ id, rol, email, tenant_id }`, rechazo de tokens expirados o con firma invalida, extracción correcta de `id` y `rol`
+- **rateLimiter**: aplicación del limite configurado por IP, respuesta 429 al exceder el limite, reset de ventana de tiempo
 
 ### Controllers — Tests Unitarios con Mocks de DB
 
-Los tests de controllers ejecutan la logica del controlador con mocks del cliente de base de datos (pg Pool). Se valida:
+Los tests de controllers ejecutan la lógica del controlador con mocks del cliente de base de datos (pg Pool). Se válida:
 
-- Respuesta correcta ante datos validos
-- Manejo de errores de base de datos (conexion fallida, constraint violation)
-- Aplicacion del filtro `tenant_id` en queries
+- Respuesta correcta ante datos válidos
+- Manejo de errores de base de datos (conexión fallida, constraint violation)
+- Aplicación del filtro `tenant_id` en queries
 - Roles autorizados: `admin`, `agente`, `cliente`, `super_admin`
 
 ---

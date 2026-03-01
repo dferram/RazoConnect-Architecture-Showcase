@@ -3,27 +3,27 @@
 <details open>
 <summary>🇲🇽 Español</summary>
 
-RazoConnect incluye un modulo de credito completo que cubre el ciclo de vida desde la solicitud hasta la suspension, y un modulo RMA (Return Merchandise Authorization) para gestionar devoluciones con reintegro automatico de inventario y ajuste de cuentas por cobrar.
+RazoConnect incluye un módulo de crédito completo que cubre el ciclo de vida desde la solicitud hasta la suspensión, y un módulo RMA (Return Merchandise Authorization) para gestionar devoluciones con reintegro automático de inventario y ajuste de cuentas por cobrar.
 
 ---
 
 ## Tabla de Contenidos
 
-- [Flujo de Solicitud de Credito](#flujo-de-solicitud-de-credito)
+- [Flujo de Solicitud de Crédito](#flujo-de-solicitud-de-crédito)
 - [Scoring de Riesgo Crediticio](#scoring-de-riesgo-crediticio)
-- [Estados del Credito](#estados-del-credito)
+- [Estados del Crédito](#estados-del-crédito)
 - [Middleware checkCreditStatus](#middleware-checkcreditstatus)
 - [Flujo RMA — Devoluciones](#flujo-rma--devoluciones)
 
 ---
 
-## Flujo de Solicitud de Credito
+## Flujo de Solicitud de Crédito
 
 ```mermaid
 flowchart TD
-    Cliente["Cliente solicita crédito"] --> Solicitud["POST /api/creditos/solicitar"]
-    Solicitud --> Analisis["creditAnalysisService.analizarRiesgoCredito()"]
-    Analisis --> Factores["Calcular:\n- Antigüedad en meses\n- Max ticket histórico\n- Frecuencia de compras\n- Pagos vencidos"]
+    Cliente["Cliente solicita crédito"] --> Solicitud["POST /api/créditos/solicitar"]
+    Solicitud --> Análisis["creditAnalysisService.analizarRiesgoCredito()"]
+    Análisis --> Factores["Calcular:\n- Antigüedad en meses\n- Max ticket histórico\n- Frecuencia de compras\n- Pagos vencidos"]
     Factores --> Nivel{"¿Nivel de riesgo?"}
     
     Nivel -->|"Antigüedad > 6 meses\nMonto <= max * 1.5\nPedidos > 3"| Bajo["BAJO"]
@@ -37,7 +37,7 @@ flowchart TD
     Admin --> Aprobado["Crédito ACTIVO\nLímite asignado"]
 ```
 
-El sistema genera una recomendacion automatica pero no aprueba ni rechaza de forma autonoma. El administrador siempre tiene la decision final. Esto preserva el control humano sobre compromisos financieros mientras elimina el trabajo manual de recopilar y calcular los factores de riesgo.
+El sistema genera una recomendación automática pero no aprueba ni rechaza de forma autonoma. El administrador siempre tiene la decision final. Esto preserva el control humano sobre compromisos financieros mientras elimina el trabajo manual de recopilar y calcular los factores de riesgo.
 
 ---
 
@@ -47,16 +47,16 @@ El `creditAnalysisService` evalua cuatro factores del historial del cliente para
 
 | Factor | Indicador de Riesgo Bajo | Indicador de Riesgo Alto |
 |---|---|---|
-| Antiguedad en la plataforma | Mas de 6 meses | Menos de 1 mes |
-| Frecuencia de compras | Mas de 3 pedidos al mes | Sin historial de pedidos |
-| Monto solicitado vs max historico | Dentro de 1.5x el maximo historico | Mas de 2.5x el maximo historico |
+| Antiguedad en la plataforma | Más de 6 meses | Menos de 1 mes |
+| Frecuencia de compras | Más de 3 pedidos al mes | Sin historial de pedidos |
+| Monto solicitado vs max histórico | Dentro de 1.5x el maximo histórico | Más de 2.5x el maximo histórico |
 | Pagos vencidos | Sin deudas vencidas | Deuda activa o historial de incumplimiento |
 
-Un cliente con riesgo BAJO puede ver aprobado su credito rapidamente. Un cliente con riesgo ALTO probablemente sea rechazado, aunque el administrador puede override la recomendacion con justificacion.
+Un cliente con riesgo BAJO puede ver aprobado su crédito rapidamente. Un cliente con riesgo ALTO probablemente sea rechazado, aunque el administrador puede override la recomendación con justificación.
 
 ---
 
-## Estados del Credito
+## Estados del Crédito
 
 ```mermaid
 stateDiagram-v2
@@ -70,24 +70,24 @@ stateDiagram-v2
     RECHAZADO --> [*]
 ```
 
-| Estado | Descripcion |
+| Estado | Descripción |
 |---|---|
-| ACTIVO | El cliente puede realizar pedidos a credito dentro de su limite |
-| SUSPENDIDO | Credito bloqueado automaticamente por deuda vencida; se reactiva al regularizar |
-| CANCELADO | Credito cancelado permanentemente por el administrador |
+| ACTIVO | El cliente puede realizar pedidos a crédito dentro de su limite |
+| SUSPENDIDO | Crédito bloqueado automáticamente por deuda vencida; se reactiva al regularizar |
+| CANCELADO | Crédito cancelado permanentemente por el administrador |
 
-La suspension automatica es ejecutada por la funcion PL/pgSQL `suspender_clientes_morosos()` que corre diariamente via pg_cron.
+La suspensión automática es ejecutada por la función PL/pgSQL `suspender_clientes_morosos()` que corre diariamente via pg_cron.
 
 ---
 
 ## Middleware checkCreditStatus
 
-Antes de confirmar un pedido con pago a credito, el middleware `checkCreditStatus` verifica:
+Antes de confirmar un pedido con pago a crédito, el middleware `checkCreditStatus` verifica:
 
 ```mermaid
 flowchart TD
-    Pedido["Cliente confirma pedido a credito"] --> C1["checkCreditAccess\nTenant tiene modulo de credito activo?"]
-    C1 --> C2["checkCreditStatus\nCredito del cliente esta ACTIVO?"]
+    Pedido["Cliente confirma pedido a crédito"] --> C1["checkCreditAccess\nTenant tiene módulo de crédito activo?"]
+    C1 --> C2["checkCreditStatus\nCrédito del cliente está ACTIVO?"]
     C2 --> C3["Limite disponible >= monto del pedido?"]
     C3 --> C4["Sin deuda vencida activa?"]
     C4 --> Confirmado["Pedido confirmado\nCxC actualizada"]
@@ -100,25 +100,25 @@ flowchart TD
 
 ## Flujo RMA — Devoluciones
 
-El modulo de devoluciones implementa un flujo RMA completo con cuatro validaciones antes de crear la solicitud y procesamiento automatico al ser aprobada por el administrador.
+El módulo de devoluciones implementa un flujo RMA completo con cuatro validaciones antes de crear la solicitud y procesamiento automático al ser aprobada por el administrador.
 
 ```mermaid
 flowchart TD
-    Cliente["Cliente solicita devolucion"] --> V1["Validacion 1: Pedido pertenece al cliente"]
-    V1 --> V2["Validacion 2: Han pasado menos de 30 dias"]
-    V2 --> V3["Validacion 3: Pedido esta Completado o Entregado"]
-    V3 --> V4["Validacion 4: Items existen en el pedido"]
-    V4 --> Pendiente["Devolucion en estado PENDIENTE"]
+    Cliente["Cliente solicita devolución"] --> V1["Validación 1: Pedido pertenece al cliente"]
+    V1 --> V2["Validación 2: Han pasado menos de 30 dias"]
+    V2 --> V3["Validación 3: Pedido está Completado o Entregado"]
+    V3 --> V4["Validación 4: Items existen en el pedido"]
+    V4 --> Pendiente["Devolución en estado PENDIENTE"]
     Pendiente --> Admin["Admin revisa"]
-    Admin -->|"Aprobar"| Proceso["Procesar automaticamente:"]
+    Admin -->|"Aprobar"| Proceso["Procesar automáticamente:"]
     Proceso --> I1["Reintegro de inventario al stock"]
     Proceso --> I2["Ajuste de CxC del cliente"]
-    Proceso --> I3["Actualizacion de estado del pedido"]
-    Proceso --> I4["Email de confirmacion al cliente"]
+    Proceso --> I3["Actualización de estado del pedido"]
+    Proceso --> I4["Email de confirmación al cliente"]
     Admin -->|"Rechazar"| Rechazo["Email de rechazo al cliente"]
 ```
 
-Al aprobar una devolucion, el sistema ejecuta las cuatro acciones de forma atomica dentro de una transaccion. Si cualquiera de ellas falla (por ejemplo, el reintegro de inventario), la transaccion completa se revierte y la devolucion permanece en estado PENDIENTE con el error registrado.
+Al aprobar una devolución, el sistema ejecuta las cuatro acciones de forma atómica dentro de una transacción. Si cualquiera de ellas falla (por ejemplo, el reintegro de inventario), la transacción completa se revierte y la devolución permanece en estado PENDIENTE con el error registrado.
 
 ---
 
