@@ -3,14 +3,14 @@
 <details open>
 <summary>🇲🇽 Español</summary>
 
-RazoConnect migro su rate limiter en memoria a una solucion distribuida basada en `express-rate-limit` con `RedisStore` respaldado por **Azure Cache for Redis**. El cambio fue necesario porque Azure App Service puede escalar horizontalmente a multiples instancias: un rate limiter en memoria es por instancia y no garantiza el limite global entre todas las instancias del servicio.
+RazoConnect migro su rate limiter en memoria a una solución distribuida basada en `express-rate-limit` con `RedisStore` respaldado por **Azure Cache for Redis**. El cambio fue necesario porque Azure App Service puede escalar horizontalmente a múltiples instancias: un rate limiter en memoria es por instancia y no garantiza el limite global entre todas las instancias del servicio.
 
 ---
 
 ## Tabla de Contenidos
 
 - [Por Que Distribuido](#por-que-distribuido)
-- [Conexion Redis TLS](#conexion-redis-tls)
+- [Conexión Redis TLS](#conexión-redis-tls)
 - [globalLimiter](#globallimiter)
 - [authLimiter](#authlimiter)
 - [Flujo de Rate Limiting](#flujo-de-rate-limiting)
@@ -23,15 +23,15 @@ RazoConnect migro su rate limiter en memoria a una solucion distribuida basada e
 | Escenario | Rate limiter en memoria | Rate limiter con Redis |
 |---|---|---|
 | Una sola instancia de App Service | Funciona correctamente | Funciona correctamente |
-| Multiples instancias de App Service | Cada instancia tiene su propio contador — un atacante puede enviar N peticiones a cada instancia | Un solo contador compartido en Redis — el limite se aplica globalmente |
+| Múltiples instancias de App Service | Cada instancia tiene su propio contador — un atacante puede enviar N peticiones a cada instancia | Un solo contador compartido en Redis — el limite se aplica globalmente |
 | Reinicio de instancia | El contador se reinicia | El contador persiste en Redis |
-| Revocacion inmediata | No posible | Posible vaciando la clave en Redis |
+| Revocación inmediata | No posible | Posible vaciando la clave en Redis |
 
 ---
 
-## Conexion Redis TLS
+## Conexión Redis TLS
 
-Azure Cache for Redis requiere conexion TLS en el **puerto 6380** (no el puerto 6379 sin TLS). La conexion se configura con las siguientes variables de entorno y el flag `tls: true` en el cliente Redis.
+Azure Cache for Redis requiere conexión TLS en el **puerto 6380** (no el puerto 6379 sin TLS). La conexión se configura con las siguientes variables de entorno y el flag `tls: true` en el cliente Redis.
 
 ---
 
@@ -39,7 +39,7 @@ Azure Cache for Redis requiere conexion TLS en el **puerto 6380** (no el puerto 
 
 Aplicado a todas las rutas `/api`. Reemplaza el `apiLimiter` legacy que usaba un Map en memoria.
 
-| Parametro | Valor |
+| Parámetro | Valor |
 |---|---|
 | Maximo de peticiones | 300 |
 | Ventana de tiempo | 15 minutos |
@@ -53,7 +53,7 @@ Aplicado a todas las rutas `/api`. Reemplaza el `apiLimiter` legacy que usaba un
 
 Aplicado exclusivamente a las rutas de login de administrador para prevenir ataques de fuerza bruta.
 
-| Parametro | Valor |
+| Parámetro | Valor |
 |---|---|
 | Maximo de intentos | 10 |
 | Ventana de tiempo | 15 minutos |
@@ -82,16 +82,16 @@ flowchart LR
 
 ## Variables de Entorno Requeridas
 
-Las siguientes variables deben estar definidas para la conexion Redis con TLS:
+Las siguientes variables deben estar definidas para la conexión Redis con TLS:
 
-| Variable | Descripcion |
+| Variable | Descripción |
 |---|---|
 | `REDIS_HOST` | Hostname de la instancia de Azure Cache for Redis |
 | `REDIS_PORT` | Puerto TLS — debe ser `6380` |
 | `REDIS_PASSWORD` | Clave de acceso de la instancia Redis |
 | `REDIS_TLS` | Flag que habilita TLS en el cliente (`true`) |
 
-La ausencia de cualquiera de estas variables es detectada por `secretsValidator` al arrancar la aplicacion, que termina el proceso antes de abrir el puerto.
+La ausencia de cualquiera de estas variables es detectada por `secretsValidator` al arrancar la aplicación, que termina el proceso antes de abrir el puerto.
 
 ---
 
