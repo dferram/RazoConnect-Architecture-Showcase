@@ -60,14 +60,15 @@ El middleware `securityHeaders` adjunta cabeceras de seguridad HTTP a cada respu
 
 ## Capa 2 — rateLimiter
 
-El rate limiter esta implementado sin dependencias externas. Usa un Map en memoria con limpieza automatica para rastrear el numero de peticiones por IP en una ventana de tiempo.
+El rate limiter utiliza `express-rate-limit` con `RedisStore` respaldado por **Azure Cache for Redis** (TLS obligatorio en puerto 6380). Al correr en Azure App Service con multiples instancias, un Map en memoria no garantiza el limite global; Redis centraliza el contador entre todas las instancias.
 
 Caracteristicas clave:
-- Maximo 100 peticiones por IP cada 15 minutos en rutas generales
-- Limites mas estrictos en rutas de autenticacion
-- Limpieza automatica de entradas expiradas para evitar fugas de memoria
-- Responde con cabeceras `X-RateLimit-Limit`, `X-RateLimit-Remaining` y `X-RateLimit-Reset`
-- No depende de Redis ni de ningun servicio externo
+- **globalLimiter**: 300 peticiones por IP cada 15 minutos en todas las rutas `/api`
+- **authLimiter**: 10 intentos por IP cada 15 minutos en rutas de login de admin, con `skipSuccessfulRequests: true`
+- Limite aplicado globalmente en todas las instancias del App Service
+- Revocacion inmediata posible vaciando la clave en Redis
+
+Ver [RATE_LIMITING.md](RATE_LIMITING.md) para la arquitectura detallada.
 
 ---
 
@@ -96,7 +97,11 @@ Verifica el JWT adjunto a la peticion. La verificacion incluye:
 - Firma criptografica del token
 - Fecha de expiracion
 - Existencia del usuario en la base de datos (el token no es puramente stateless: se valida contra BD para detectar usuarios revocados)
-- Rol del usuario en el contexto del tenant
+- Extraccion de `id` y `rol` del payload normalizado `{ id, rol, email, tenant_id }`
+
+Los access tokens tienen duracion de 1 hora. Cuando expiran, el cliente ejecuta el silent refresh via `/api/auth/refresh` para obtener un nuevo access token sin interrumpir la sesion. Los refresh tokens (30 dias) se almacenan en Azure Cache for Redis para permitir revocacion centralizada.
+
+Ver [REFRESH_TOKENS.md](REFRESH_TOKENS.md) para la arquitectura de tokens duales.
 
 ---
 
@@ -174,12 +179,15 @@ Despues de esta secuencia, la peticion devuelve 401 (API) o redirige a `/login` 
 |---|---|
 | XSS reflejado o almacenado | securityHeaders (CSP), inputValidator |
 | Clickjacking | securityHeaders (X-Frame-Options) |
-| Brute force en login | rateLimiter |
+| Brute force en login | rateLimiter (authLimiter — 10 intentos / 15min con Redis) |
 | Prototype pollution | inputValidator |
 | Null byte injection | inputValidator |
 | Cookie robada en otro tenant | tenantSessionGuard |
 | JWT reutilizado en otro tenant | tenantSessionGuard |
 | Token de usuario revocado | authMiddleware (valida contra BD) |
+| Refresh token robado | Revocacion inmediata en Redis |
+| Access token de larga duracion comprometido | Arquitectura dual — access tokens de 1h (REFRESH_TOKENS.md) |
+| Limite global eludido en multi-instancia | Rate limiting distribuido con Redis (RATE_LIMITING.md) |
 | Acceso a datos de otro tenant por SQL | Row-Level Security en BD |
 | Arranque con secretos debiles | secretsValidator |
 | Pedido con credito suspendido | checkCreditStatus |
@@ -251,14 +259,15 @@ The `securityHeaders` middleware attaches HTTP security headers to every respons
 
 ## Layer 2 — rateLimiter
 
-The rate limiter is implemented without external dependencies. It uses an in-memory Map with automatic cleanup to track the number of requests per IP within a time window.
+The rate limiter uses `express-rate-limit` with `RedisStore` backed by **Azure Cache for Redis** (TLS required on port 6380). Running on Azure App Service with multiple instances, an in-memory Map does not guarantee the global limit; Redis centralizes the counter across all instances.
 
 Key characteristics:
-- Maximum 100 requests per IP every 15 minutes on general routes
-- Stricter limits on authentication routes
-- Automatic cleanup of expired entries to avoid memory leaks
-- Responds with headers `X-RateLimit-Limit`, `X-RateLimit-Remaining` and `X-RateLimit-Reset`
-- Does not depend on Redis or any external service
+- **globalLimiter**: 300 requests per IP every 15 minutes on all `/api` routes
+- **authLimiter**: 10 attempts per IP every 15 minutes on admin login routes, with `skipSuccessfulRequests: true`
+- Limit enforced globally across all App Service instances
+- Immediate revocation possible by clearing the key in Redis
+
+See [RATE_LIMITING.md](RATE_LIMITING.md) for the detailed architecture.
 
 ---
 
@@ -287,7 +296,11 @@ Verifies the JWT attached to the request. The verification includes:
 - Cryptographic signature of the token
 - Expiration date
 - Existence of the user in the database (the token is not purely stateless: it is validated against the DB to detect revoked users)
-- User role in the context of the tenant
+- Extraction of `id` and `rol` from the normalized payload `{ id, rol, email, tenant_id }`
+
+Access tokens have a duration of 1 hour. When they expire, the client executes the silent refresh via `/api/auth/refresh` to obtain a new access token without interrupting the session. Refresh tokens (30 days) are stored in Azure Cache for Redis to allow centralized revocation.
+
+See [REFRESH_TOKENS.md](REFRESH_TOKENS.md) for the dual token architecture.
 
 ---
 
@@ -365,12 +378,15 @@ After this sequence, the request returns 401 (API) or redirects to `/login` (web
 |---|---|
 | Reflected or stored XSS | securityHeaders (CSP), inputValidator |
 | Clickjacking | securityHeaders (X-Frame-Options) |
-| Login brute force | rateLimiter |
+| Login brute force | rateLimiter (authLimiter — 10 attempts / 15min with Redis) |
 | Prototype pollution | inputValidator |
 | Null byte injection | inputValidator |
 | Cookie stolen in another tenant | tenantSessionGuard |
 | JWT reused in another tenant | tenantSessionGuard |
 | Revoked user token | authMiddleware (validates against DB) |
+| Stolen refresh token | Immediate revocation in Redis |
+| Long-lived access token compromised | Dual architecture — 1h access tokens (REFRESH_TOKENS.md) |
+| Global limit bypassed in multi-instance | Distributed rate limiting with Redis (RATE_LIMITING.md) |
 | SQL access to another tenant's data | Row-Level Security in DB |
 | Startup with weak secrets | secretsValidator |
 | Order with suspended credit | checkCreditStatus |
