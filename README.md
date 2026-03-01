@@ -73,6 +73,8 @@ El flujo comienza en el dominio del tenant. Cada hostname se resuelve a un regis
 
 **Control de cambios con confirmacion obligatoria.** Las modificaciones criticas de negocio no se aplican directamente. El ChangeRequestService registra un diff entre el estado actual y el propuesto, requiere confirmacion explicita del administrador y genera automaticamente un registro en audit_log con referencia cruzada. Ver [CHANGE_REQUEST.md](CHANGE_REQUEST.md).
 
+**Tokens duales y rate limiting distribuido con Redis.** Los access tokens de 1 hora minimizan la ventana de exposicion ante robo. Los refresh tokens de 30 dias se almacenan en Azure Cache for Redis con revocacion centralizada. El rate limiter distribuido (globalLimiter 300 req/15min, authLimiter 10 intentos/15min) garantiza limites globales en entornos multi-instancia. Ver [REFRESH_TOKENS.md](REFRESH_TOKENS.md) y [RATE_LIMITING.md](RATE_LIMITING.md).
+
 ---
 
 ## Documentacion Tecnica
@@ -89,6 +91,9 @@ El flujo comienza en el dominio del tenant. Cada hostname se resuelve a un regis
 | [MODULES.md](MODULES.md) | Inventario completo de los 20+ modulos del sistema organizados por actor: cliente, admin, agente y sistema |
 | [DEVELOPER.md](DEVELOPER.md) | Perfil tecnico del desarrollador Fernando Ramírez y descripcion de <a href="https://xcore-byg8fkdve4eyatbz.mexicocentral-01.azurewebsites.net/">xCore</a> |
 | [CHANGE_REQUEST.md](CHANGE_REQUEST.md) | Patron de control de cambios auditado: ChangeRequestService registra diffs antes de aplicar modificaciones criticas, con confirmacion obligatoria |
+| [TESTING.md](TESTING.md) | Configuracion de Jest con cobertura de codigo: testEnvironment node, scripts de test/watch/coverage y estructura de tests por capa |
+| [REFRESH_TOKENS.md](REFRESH_TOKENS.md) | Arquitectura dual de tokens: access tokens de 1h y refresh tokens de 30d en Azure Redis, AuthManager con silent refresh automatico |
+| [RATE_LIMITING.md](RATE_LIMITING.md) | Rate limiting distribuido con Azure Redis: globalLimiter de 300 req/15min y authLimiter estricto de 10 intentos para prevencion de fuerza bruta |
 
 ---
 
@@ -169,6 +174,8 @@ The flow begins at the tenant's domain. Each hostname is resolved to a tenant re
 
 **Change control with mandatory confirmation.** Critical business modifications are not applied directly. The ChangeRequestService records a diff between the current and proposed state, requires explicit administrator confirmation, and automatically generates an audit_log entry with cross-reference. See [CHANGE_REQUEST.md](CHANGE_REQUEST.md).
 
+**Dual tokens and distributed rate limiting with Redis.** 1-hour access tokens minimize the exposure window on theft. 30-day refresh tokens are stored in Azure Cache for Redis with centralized revocation. The distributed rate limiter (globalLimiter 300 req/15min, authLimiter 10 attempts/15min) guarantees global limits in multi-instance environments. See [REFRESH_TOKENS.md](REFRESH_TOKENS.md) and [RATE_LIMITING.md](RATE_LIMITING.md).
+
 ---
 
 ## Technical Documentation
@@ -185,6 +192,9 @@ The flow begins at the tenant's domain. Each hostname is resolved to a tenant re
 | [MODULES.md](MODULES.md) | Complete inventory of the 20+ system modules organized by actor: client, admin, agent, and system |
 | [DEVELOPER.md](DEVELOPER.md) | Technical profile of developer Fernando Ramírez and description of <a href="https://xcore-byg8fkdve4eyatbz.mexicocentral-01.azurewebsites.net/">xCore</a> |
 | [CHANGE_REQUEST.md](CHANGE_REQUEST.md) | Audited change control pattern: ChangeRequestService records diffs before applying critical modifications, with mandatory confirmation |
+| [TESTING.md](TESTING.md) | Jest configuration with code coverage: node testEnvironment, test/watch/coverage scripts, and test structure per layer |
+| [REFRESH_TOKENS.md](REFRESH_TOKENS.md) | Dual token architecture: 1h access tokens and 30d refresh tokens in Azure Redis, AuthManager with automatic silent refresh |
+| [RATE_LIMITING.md](RATE_LIMITING.md) | Distributed rate limiting with Azure Redis: globalLimiter of 300 req/15min and strict authLimiter of 10 attempts for brute force prevention |
 
 ---
 
